@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>구구단 게임 — 해나와 해솔이</title>
+    <meta name="description" content="구구단 순서/거꾸로/랜덤 연습 게임" />
+    <style>
+      :root {
+        --bg: #fff7fb;
+        --bg-accent: radial-gradient(1200px 600px at 10% -10%, #ffe6f4 0%, transparent 60%),
+                      radial-gradient(1000px 500px at 110% 0%, #e8f7ff 0%, transparent 55%),
+                      radial-gradient(800px 400px at 50% 120%, #fff3d9 0%, transparent 55%);
+        --card: #ffffff;
+        --text: #3b2a3f;
+        --muted: #6b5c72;
+        --primary: #ff7ac8;
+        --primary-dark: #e056a9;
+        --secondary: #7bb6ff;
+        --accent: #ffd36e;
+        --shadow: 0 8px 28px rgba(81, 31, 79, 0.12);
+        --radius-lg: 20px;
+        --radius-sm: 12px;
+        --good: #1ea672;
+        --bad: #e25a5a;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        background-image: var(--bg-accent);
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .wrap {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      header { padding: 18px 16px 8px; text-align: center; }
+      .title { margin: 0; font-size: clamp(24px, 4.2vw, 40px); text-shadow: 0 2px 0 #fff, 0 6px 18px rgba(255,122,200,.25); }
+      .title .spark { color: var(--primary); }
+      .title .sky { color: var(--secondary); }
+      .subtitle { margin: 6px 0 0; color: var(--muted); font-size: clamp(13px, 2vw, 16px); }
+
+      main { padding: 16px; display: grid; place-items: center; }
+
+      .card {
+        width: min(720px, 92vw);
+        background: var(--card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: clamp(16px, 3vw, 26px);
+      }
+
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+      .row + .row { margin-top: 12px; }
+
+      label { font-weight: 700; color: #5a4966; }
+
+      select, input[type="text"], input[type="number"] {
+        appearance: none;
+        border: 2px solid #f5e1ef;
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 16px;
+        min-width: 120px;
+      }
+
+      .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35); background: var(--primary); color: #fff; }
+      .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+      .btn.secondary { background: #eef5ff; color: #2a4a7e; box-shadow: 0 6px 14px rgba(123,182,255,.25); }
+      .btn.ghost { background: transparent; box-shadow: none; border: 2px dashed #ffd0ef; color: #7d5277; }
+
+      .meta { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 14px; margin-top: 8px; }
+      .badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(90deg, #ffe3f2, #e9f3ff); color: #6a3c56; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+
+      .quiz {
+        display: none;
+        margin-top: 8px;
+      }
+      .quiz.active { display: block; }
+
+      .question { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin: 10px 0 6px; }
+      .qtext { text-align: right; font-size: clamp(28px, 6vw, 48px); font-weight: 900; }
+      .times { text-align: center; font-size: clamp(24px, 5vw, 36px); color: #8a6a92; }
+      .btext { text-align: left; font-size: clamp(28px, 6vw, 48px); font-weight: 900; }
+
+      .answer { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 8px; }
+      .answer input { width: 140px; text-align: center; font-size: 22px; border-radius: 12px; border: 2px solid #f5e1ef; padding: 10px 12px; }
+
+      .status { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; color: var(--muted); font-size: 14px; }
+
+      .feedback { margin-top: 10px; font-weight: 900; text-align: center; font-size: 18px; }
+      .good { color: var(--good); }
+      .bad { color: var(--bad); }
+
+      .result { display: none; margin-top: 8px; text-align: center; }
+      .result.active { display: block; }
+      .score { font-size: clamp(22px, 4.5vw, 36px); font-weight: 900; margin: 6px 0 10px; }
+      .small { color: var(--muted); font-size: 13px; }
+      .saveStatus { margin-top: 8px; font-size: 14px; }
+
+      footer { text-align: center; padding: 20px 16px 28px; color: var(--muted); font-size: 13px; }
+
+      .topnav { display: flex; justify-content: center; gap: 10px; margin: 8px 0 4px; }
+
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+      .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #ffcaf6; outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="title">구구단 <span class="spark">게임</span> <span class="sky">✖️</span></h1>
+        <p class="subtitle">순서대로, 거꾸로, 랜덤으로 즐겁게 연습해요!</p>
+        <div class="topnav">
+          <a class="btn secondary" href="index.html">← 메인으로</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="card" aria-label="구구단 설정 및 게임">
+          <div id="setup">
+            <div class="row">
+              <label for="player">이름</label>
+              <input id="player" type="text" inputmode="text" placeholder="이름(선택)" aria-describedby="playerHelp" />
+              <span id="playerHelp" class="small">기록 저장에 사용돼요.</span>
+            </div>
+            <div class="row">
+              <label for="dan">단 선택</label>
+              <select id="dan" aria-label="연습할 단 선택">
+                <option value="2">2단</option>
+                <option value="3">3단</option>
+                <option value="4">4단</option>
+                <option value="5">5단</option>
+                <option value="6">6단</option>
+                <option value="7">7단</option>
+                <option value="8">8단</option>
+                <option value="9">9단</option>
+              </select>
+            </div>
+            <div class="row">
+              <label for="mode">문제 순서</label>
+              <select id="mode" aria-label="문제 순서 선택">
+                <option value="sequential">처음부터 순서대로</option>
+                <option value="reverse">거꾸로</option>
+                <option value="random">랜덤(중복 없음)</option>
+              </select>
+            </div>
+            <div class="row">
+              <button id="startBtn" class="btn"><span aria-hidden="true">🎮</span> 시작하기</button>
+              <button id="resetBtn" class="btn ghost" type="button"><span aria-hidden="true">🧹</span> 초기화</button>
+            </div>
+            <div class="meta">
+              <span class="badge"><span aria-hidden>🧮</span> 2단 ~ 9단</span>
+              <span class="badge"><span aria-hidden>✨</span> 9문제</span>
+              <span class="badge"><span aria-hidden>💡</span> 엔터키로 제출</span>
+            </div>
+          </div>
+
+          <div id="quiz" class="quiz" aria-live="polite">
+            <div class="status">
+              <div>진행: <span id="progress">0/9</span></div>
+              <div>점수: <span id="score">0</span></div>
+              <div>시간: <span id="elapsed">0.0s</span></div>
+            </div>
+            <div class="question" aria-label="문제">
+              <div class="qtext" id="qA">2</div>
+              <div class="times">×</div>
+              <div class="btext" id="qB">1</div>
+            </div>
+            <div class="answer">
+              <label class="sr-only" for="ans">정답 입력</label>
+              <input id="ans" type="number" inputmode="numeric" placeholder="정답" />
+              <button id="submitBtn" class="btn" type="button">정답!</button>
+              <button id="skipBtn" class="btn secondary" type="button">건너뛰기</button>
+            </div>
+            <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+          </div>
+
+          <div id="result" class="result" aria-live="polite">
+            <div class="score" id="finalScore">0 / 9 점</div>
+            <div class="small" id="finalTime">총 시간: 0.0초</div>
+            <div class="saveStatus" id="saveStatus">기록 저장 준비 완료</div>
+            <div style="margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <button id="retryBtn" class="btn" type="button">다시 하기</button>
+              <a class="btn secondary" href="index.html">메인으로</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>즐겁게 연습하면 실력이 쑥쑥! ✨</footer>
+    </div>
+
+    <script>
+      // 설정: 결과 저장용 엔드포인트 주소 (Google Apps Script Web App URL 등)
+      // 예: const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
+      const ENDPOINT_URL = ""; // 비워두면 네트워크 저장을 건너뜁니다.
+
+      // 간단한 오프라인 큐 (엔드포인트가 준비되면 자동 전송)
+      const LS_KEY = "gugu_offline_queue";
+      function loadQueue(){ try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; } }
+      function saveQueue(arr){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
+      async function flushQueue(){
+        if(!ENDPOINT_URL) return;
+        const q = loadQueue();
+        if(q.length === 0) return;
+        let okCount = 0;
+        const rest = [];
+        for(const item of q){
+          try {
+            const r = await fetch(ENDPOINT_URL, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(item) });
+            if(!r.ok) throw new Error("HTTP "+r.status);
+            okCount++;
+          } catch(e){ rest.push(item); }
+        }
+        saveQueue(rest);
+        return okCount;
+      }
+
+      const els = {
+        setup: document.getElementById('setup'),
+        quiz: document.getElementById('quiz'),
+        result: document.getElementById('result'),
+        player: document.getElementById('player'),
+        dan: document.getElementById('dan'),
+        mode: document.getElementById('mode'),
+        startBtn: document.getElementById('startBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        qA: document.getElementById('qA'),
+        qB: document.getElementById('qB'),
+        ans: document.getElementById('ans'),
+        submitBtn: document.getElementById('submitBtn'),
+        skipBtn: document.getElementById('skipBtn'),
+        progress: document.getElementById('progress'),
+        score: document.getElementById('score'),
+        elapsed: document.getElementById('elapsed'),
+        feedback: document.getElementById('feedback'),
+        finalScore: document.getElementById('finalScore'),
+        finalTime: document.getElementById('finalTime'),
+        saveStatus: document.getElementById('saveStatus'),
+        retryBtn: document.getElementById('retryBtn'),
+      };
+
+      let state = {
+        player: '',
+        dan: 2,
+        mode: 'sequential',
+        questions: [], // {a,b,answer}
+        idx: 0,
+        correct: 0,
+        startedAt: 0,
+        qStartedAt: 0,
+        details: [] // {a,b,user,correctAns,correct,timeMs}
+      };
+
+      function buildQuestions(dan, mode){
+        const arr = Array.from({length: 9}, (_,i)=> i+1);
+        if(mode === 'reverse') arr.reverse();
+        if(mode === 'random') shuffle(arr);
+        return arr.map(b=> ({ a: dan, b, answer: dan*b }));
+      }
+
+      function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+      function fmtSec(ms){ return (ms/1000).toFixed(1)+"s"; }
+
+      function show(el){ el.classList.add('active'); }
+      function hide(el){ el.classList.remove('active'); }
+
+      function start(){
+        state.player = (els.player.value || '').trim();
+        state.dan = parseInt(els.dan.value,10);
+        state.mode = els.mode.value;
+        state.questions = buildQuestions(state.dan, state.mode);
+        state.idx = 0;
+        state.correct = 0;
+        state.details = [];
+        state.startedAt = Date.now();
+        els.score.textContent = '0';
+        els.progress.textContent = `0/${state.questions.length}`;
+        els.elapsed.textContent = '0.0s';
+        els.feedback.textContent = '';
+        hide(els.result); show(els.quiz);
+        document.getElementById('ans').value = '';
+        nextQuestion();
+        timerTick();
+      }
+
+      function nextQuestion(){
+        if(state.idx >= state.questions.length){
+          finish();
+          return;
+        }
+        const q = state.questions[state.idx];
+        els.qA.textContent = q.a;
+        els.qB.textContent = q.b;
+        els.progress.textContent = `${state.idx}/${state.questions.length}`;
+        els.ans.value = '';
+        els.ans.focus();
+        state.qStartedAt = Date.now();
+      }
+
+      function submit(currentSkipped=false){
+        if(state.idx >= state.questions.length) return;
+        const q = state.questions[state.idx];
+        const user = currentSkipped ? NaN : parseInt(els.ans.value,10);
+        const correct = (!Number.isNaN(user) && user === q.answer);
+        if(correct) state.correct++;
+        const timeMs = Date.now() - state.qStartedAt;
+        state.details.push({ a:q.a, b:q.b, user: Number.isNaN(user)? null : user, correctAns: q.answer, correct, timeMs });
+        els.score.textContent = String(state.correct);
+        els.feedback.textContent = correct ? '정답! 잘했어요 ✅' : `아쉬워요 😅 정답은 ${q.answer}`;
+        els.feedback.className = 'feedback ' + (correct ? 'good' : 'bad');
+        state.idx++;
+        els.progress.textContent = `${state.idx}/${state.questions.length}`;
+        setTimeout(()=>{ els.feedback.textContent=''; els.feedback.className='feedback'; nextQuestion(); }, 650);
+      }
+
+      function timerTick(){
+        if(!els.quiz.classList.contains('active')) return;
+        const ms = Date.now() - state.startedAt;
+        els.elapsed.textContent = fmtSec(ms);
+        requestAnimationFrame(timerTick);
+      }
+
+      function finish(){
+        hide(els.quiz); show(els.result);
+        const finishedAt = Date.now();
+        const durationMs = finishedAt - state.startedAt;
+        els.finalScore.textContent = `${state.correct} / ${state.questions.length} 점`;
+        els.finalTime.textContent = `총 시간: ${(durationMs/1000).toFixed(1)}초`;
+
+        const payload = {
+          type: 'gugudan',
+          player: state.player || null,
+          mode: state.mode,
+          dan: state.dan,
+          total: state.questions.length,
+          correct: state.correct,
+          startedAt: new Date(state.startedAt).toISOString(),
+          finishedAt: new Date(finishedAt).toISOString(),
+          durationMs,
+          details: state.details,
+          userAgent: navigator.userAgent
+        };
+        saveRecord(payload).catch(()=>{});
+      }
+
+      async function saveRecord(payload){
+        // 우선 로컬 큐에 적재
+        const q = loadQueue(); q.push(payload); saveQueue(q);
+        els.saveStatus.textContent = '기록 저장 중…';
+        if(!ENDPOINT_URL){
+          els.saveStatus.textContent = '엔드포인트 미설정: 오프라인에 저장됨';
+          return;
+        }
+        try {
+          const okCount = await flushQueue();
+          if(okCount && okCount > 0){
+            els.saveStatus.textContent = '기록 저장 완료 ✅';
+          } else {
+            els.saveStatus.textContent = '네트워크 오류: 나중에 자동 재시도됨';
+          }
+        } catch (e){
+          els.saveStatus.textContent = '저장 실패: 오프라인 큐에 보관됨';
+        }
+      }
+
+      // 이벤트 바인딩
+      els.startBtn.addEventListener('click', start);
+      els.resetBtn.addEventListener('click', ()=>{
+        els.player.value = '';
+        els.dan.value = '2';
+        els.mode.value = 'sequential';
+      });
+      els.submitBtn.addEventListener('click', ()=> submit(false));
+      els.skipBtn.addEventListener('click', ()=> submit(true));
+      els.retryBtn.addEventListener('click', ()=>{
+        hide(els.result); show(els.quiz); // 재사용 흐름 간단화
+        start();
+      });
+      els.ans.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter') submit(false);
+      });
+
+      // 페이지 로드시 오프라인 큐 전송 시도
+      window.addEventListener('load', ()=>{ flushQueue(); });
+    </script>
+  </body>
+  </html>
+
