@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>구구단 게임 — 해나와 해솔이</title>
     <meta name="description" content="구구단 순서/거꾸로/랜덤 연습 게임" />
+    <!-- 하드코딩된 저장 엔드포인트(선택): 아래 content에 웹 앱 URL을 넣으면 즉시 적용됩니다. -->
+    <meta name="gugu-endpoint" content="" />
     <style>
       :root {
         --bg: #fff7fb;
@@ -203,9 +205,16 @@
     </div>
 
     <script>
-      // 엔드포인트 URL을 로컬에 저장/불러오기 (설정 버튼 제공)
+      // 엔드포인트 URL 하드코딩/저장/불러오기
+      // 우선순위: <meta name="gugu-endpoint"> > window.GUGU_ENDPOINT_URL > localStorage('gugu_endpoint')
       const EP_LS_KEY = 'gugu_endpoint';
-      const getEndpoint = () => (localStorage.getItem(EP_LS_KEY) || '').trim();
+      const getEndpoint = () => {
+        const metaTag = document.querySelector('meta[name="gugu-endpoint"]');
+        const metaEP = (metaTag?.content || '').trim();
+        const winEP = (typeof window !== 'undefined' && window.GUGU_ENDPOINT_URL ? String(window.GUGU_ENDPOINT_URL) : '').trim();
+        const lsEP = (localStorage.getItem(EP_LS_KEY) || '').trim();
+        return metaEP || winEP || lsEP;
+      };
       const setEndpoint = (url) => { if(typeof url === 'string') localStorage.setItem(EP_LS_KEY, url.trim()); };
 
       // 간단한 오프라인 큐 (엔드포인트가 준비되면 자동 전송)
@@ -422,11 +431,17 @@
           btn.type = 'button';
           btn.textContent = '💾 기록 저장 설정';
           btn.addEventListener('click', ()=>{
-            const current = getEndpoint();
+            const metaTag = document.querySelector('meta[name="gugu-endpoint"]');
+            const hardcoded = (metaTag?.content || '').trim() || (typeof window !== 'undefined' && window.GUGU_ENDPOINT_URL ? String(window.GUGU_ENDPOINT_URL).trim() : '');
+            const current = (localStorage.getItem(EP_LS_KEY) || '').trim() || hardcoded;
             const url = prompt('Google Apps Script 웹앱 URL을 입력하세요', current);
             if(typeof url === 'string'){
               setEndpoint(url);
-              alert('엔드포인트가 저장되었어요! 페이지를 새로고침하면 적용됩니다.');
+              if(hardcoded){
+                alert('저장됨! 단, 코드에 하드코딩된 URL이 있어 로컬 설정보다 우선 적용됩니다. 코드의 meta/script 값을 비우면 로컬 설정이 사용돼요.');
+              } else {
+                alert('엔드포인트가 저장되었어요! 페이지를 새로고침하면 적용됩니다.');
+              }
               flushQueue();
             }
           });
