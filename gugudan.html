@@ -335,6 +335,8 @@
         if(correct) state.correct++;
         const timeMs = Date.now() - state.qStartedAt;
         state.details.push({ a:q.a, b:q.b, user: Number.isNaN(user)? null : user, correctAns: q.answer, correct, timeMs });
+        // 개별 문제 기록을 즉시 저장(오프라인 큐 → 엔드포인트 전송)
+        saveQuestionRecord(q, Number.isNaN(user)? null : user, correct, timeMs).catch(()=>{});
         els.score.textContent = String(state.correct);
         els.feedback.textContent = correct ? '정답! 잘했어요 ✅' : `아쉬워요 😅 정답은 ${q.answer}`;
         els.feedback.className = 'feedback ' + (correct ? 'good' : 'bad');
@@ -402,6 +404,24 @@
         } catch (e){
           els.saveStatus.textContent = '저장 실패: 오프라인 큐에 보관됨';
         }
+      }
+
+      // 개별 문제 저장 페이로드 구성 후 저장
+      async function saveQuestionRecord(q, userValue, isCorrect, timeMs){
+        const payload = {
+          type: 'gugudan_q',
+          player: state.player || null,
+          mode: state.mode,
+          dan: state.dan,
+          total: 1,
+          correct: isCorrect ? 1 : 0,
+          startedAt: new Date(state.qStartedAt).toISOString(),
+          finishedAt: new Date().toISOString(),
+          durationMs: timeMs,
+          details: [{ a: q.a, b: q.b, user: userValue, correctAns: q.answer, correct: isCorrect, timeMs }],
+          userAgent: navigator.userAgent
+        };
+        return saveRecord(payload);
       }
 
       // 이벤트 바인딩
