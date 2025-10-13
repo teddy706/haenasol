@@ -20,11 +20,13 @@
 5. `Dan` — 2~9
 6. `Total` — 총 문항 수(기본 9)
 7. `Correct` — 맞힌 개수
-8. `StartedAt` — ISO 문자열
-9. `FinishedAt` — ISO 문자열
-10. `DurationMs` — 총 소요 시간(ms)
-11. `UserAgent` — 브라우저 UA
-12. `DetailsJSON` — 세부 기록 전체(JSON 문자열, 선택)
+8. `BestStreak` — 최고 연속 정답 수
+9. `StartedAt` — ISO 문자열
+10. `FinishedAt` — ISO 문자열
+11. `DurationMs` — 총 소요 시간(ms)
+12. `UserAgent` — 브라우저 UA
+13. `QuestionList` — 예: `2×1=2 | 2×2=4 | …`
+14. `DetailsJSON` — 세부 기록 전체(JSON 문자열, 선택)
 
 ### GUGUDAN_QUESTIONS (열)
 
@@ -35,11 +37,15 @@
 5. `Dan` — 2~9
 6. `A` — 단(=dan)
 7. `B` — 곱해지는 수(1~9)
-8. `User` — 사용자가 입력한 값(null 허용)
-9. `CorrectAns` — 정답
-10. `Correct` — 정오(1 또는 0)
-11. `TimeMs` — 해당 문제 소요 시간(ms)
-12. `UserAgent` — 브라우저 UA
+8. `QuestionText` — 예: `2 × 3`
+9. `AnswerText` — 예: `6`
+10. `User` — 사용자가 입력한 값(null 허용)
+11. `CorrectAns` — 정답
+12. `Correct` — 정오(1 또는 0)
+13. `StreakAfter` — 제출 후 연속 정답 수
+14. `BestStreak` — 해당 세션 당시 최고 연속 정답 수
+15. `TimeMs` — 해당 문제 소요 시간(ms)
+16. `UserAgent` — 브라우저 UA
 
 ## Apps Script로 자동 셋업/저장/대시보드 만들기
 
@@ -79,4 +85,3 @@
 - 새 코드로 바꾼 뒤에는 “배포 → 새 버전”으로 다시 배포해야 URL이 최신 로직을 사용합니다.
 - CORS 이슈를 피하려면 클라이언트에서 헤더를 추가하지 않고 `text/plain` 본문으로 전송하세요(이 프로젝트는 이미 그렇게 동작합니다).
 - 시트명이 다르면 스크립트 상단 상수(SHEET_…)를 변경하세요.
-

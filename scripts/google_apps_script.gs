@@ -18,10 +18,10 @@ function getOrCreateSheet_(name, headers) {
 
 function setup() {
   const summaryHeaders = [
-    'Timestamp','SessionId','Player','Mode','Dan','Total','Correct','StartedAt','FinishedAt','DurationMs','UserAgent','DetailsJSON'
+    'Timestamp','SessionId','Player','Mode','Dan','Total','Correct','BestStreak','StartedAt','FinishedAt','DurationMs','UserAgent','QuestionList','DetailsJSON'
   ];
   const questionHeaders = [
-    'Timestamp','SessionId','Player','Mode','Dan','A','B','User','CorrectAns','Correct','TimeMs','UserAgent'
+    'Timestamp','SessionId','Player','Mode','Dan','A','B','QuestionText','AnswerText','User','CorrectAns','Correct','StreakAfter','BestStreak','TimeMs','UserAgent'
   ];
   const dashHeaders = ['DASHBOARD'];
 
@@ -40,6 +40,10 @@ function doPost(e) {
 
     if (data.type === 'gugudan_q') {
       const q = (data.details && data.details[0]) || {};
+      const questionText = (q.a != null && q.b != null) ? `${q.a}×${q.b}` : '';
+      const answerText = q.correctAns != null ? String(q.correctAns) : '';
+      const streakAfter = q.streakAfter != null ? q.streakAfter : (data.streakAfter != null ? data.streakAfter : '');
+      const bestStreak = data.bestStreak != null ? data.bestStreak : (q.bestStreak != null ? q.bestStreak : '');
       const sh = ss.getSheetByName(SHEET_QUESTIONS) || ss.insertSheet(SHEET_QUESTIONS);
       const row = [
         now,
@@ -49,15 +53,27 @@ function doPost(e) {
         data.dan || '',
         q.a != null ? q.a : '',
         q.b != null ? q.b : '',
+        questionText,
+        answerText,
         q.user != null ? q.user : '',
         q.correctAns != null ? q.correctAns : '',
         q.correct ? 1 : 0,
+        streakAfter,
+        bestStreak,
         q.timeMs != null ? q.timeMs : '',
         data.userAgent || ''
       ];
       sh.appendRow(row);
     } else {
       const sh = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
+      const questionList = Array.isArray(data.details) && data.details.length
+        ? data.details.map(d => {
+            const a = d.a != null ? d.a : '?';
+            const b = d.b != null ? d.b : '?';
+            const ans = d.correctAns != null ? d.correctAns : '?';
+            return `${a}×${b}=${ans}`;
+          }).join(' | ')
+        : '';
       const row = [
         now,
         sessionId,
@@ -66,10 +82,12 @@ function doPost(e) {
         data.dan || '',
         data.total != null ? data.total : '',
         data.correct != null ? data.correct : '',
+        data.bestStreak != null ? data.bestStreak : '',
         data.startedAt || '',
         data.finishedAt || '',
         data.durationMs != null ? data.durationMs : '',
         data.userAgent || '',
+        questionList,
         JSON.stringify(data.details || [])
       ];
       sh.appendRow(row);
@@ -151,4 +169,3 @@ function buildDashboard() {
     dash.insertChart(chart3);
   }
 }
-
