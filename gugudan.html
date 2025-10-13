@@ -203,25 +203,32 @@
     </div>
 
     <script>
-      // 설정: 결과 저장용 엔드포인트 주소 (Google Apps Script Web App URL 등)
-      // 예: const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbx.../exec";
-      const ENDPOINT_URL = ""; // 비워두면 네트워크 저장을 건너뜁니다.
+      // 엔드포인트 URL을 로컬에 저장/불러오기 (설정 버튼 제공)
+      const EP_LS_KEY = 'gugu_endpoint';
+      const getEndpoint = () => (localStorage.getItem(EP_LS_KEY) || '').trim();
+      const setEndpoint = (url) => { if(typeof url === 'string') localStorage.setItem(EP_LS_KEY, url.trim()); };
 
       // 간단한 오프라인 큐 (엔드포인트가 준비되면 자동 전송)
       const LS_KEY = "gugu_offline_queue";
       function loadQueue(){ try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; } }
       function saveQueue(arr){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
       async function flushQueue(){
-        if(!ENDPOINT_URL) return;
+        const ENDPOINT_URL = getEndpoint();
+        if(!ENDPOINT_URL) return 0;
         const q = loadQueue();
         if(q.length === 0) return;
         let okCount = 0;
         const rest = [];
         for(const item of q){
           try {
-            const r = await fetch(ENDPOINT_URL, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(item) });
-            if(!r.ok) throw new Error("HTTP "+r.status);
-            okCount++;
+            // CORS 프리플라이트를 피하기 위해 헤더 미설정, text/plain 전송 시도
+            const r = await fetch(ENDPOINT_URL, { method: "POST", body: JSON.stringify(item), keepalive: true });
+            // Apps Script가 CORS를 허용하면 r.ok가 true가 됩니다.
+            if(r && 'ok' in r && r.ok) {
+              okCount++;
+            } else {
+              throw new Error('No OK');
+            }
           } catch(e){ rest.push(item); }
         }
         saveQueue(rest);
@@ -361,6 +368,7 @@
         // 우선 로컬 큐에 적재
         const q = loadQueue(); q.push(payload); saveQueue(q);
         els.saveStatus.textContent = '기록 저장 중…';
+        const ENDPOINT_URL = getEndpoint();
         if(!ENDPOINT_URL){
           els.saveStatus.textContent = '엔드포인트 미설정: 오프라인에 저장됨';
           return;
@@ -370,7 +378,17 @@
           if(okCount && okCount > 0){
             els.saveStatus.textContent = '기록 저장 완료 ✅';
           } else {
-            els.saveStatus.textContent = '네트워크 오류: 나중에 자동 재시도됨';
+            // fetch 실패 시 Beacon으로 최후 전송 시도(응답 확인 불가)
+            try {
+              const sent = navigator.sendBeacon && navigator.sendBeacon(ENDPOINT_URL, new Blob([JSON.stringify(payload)], {type: 'text/plain'}));
+              if(sent){
+                els.saveStatus.textContent = '전송 시도됨(Beacon) — 확인은 불가';
+              } else {
+                els.saveStatus.textContent = '네트워크 오류: 나중에 자동 재시도됨';
+              }
+            } catch {
+              els.saveStatus.textContent = '네트워크 오류: 나중에 자동 재시도됨';
+            }
           }
         } catch (e){
           els.saveStatus.textContent = '저장 실패: 오프라인 큐에 보관됨';
@@ -395,8 +413,27 @@
       });
 
       // 페이지 로드시 오프라인 큐 전송 시도
-      window.addEventListener('load', ()=>{ flushQueue(); });
+      window.addEventListener('load', ()=>{
+        // 헤더 상단에 설정 버튼 추가
+        const nav = document.querySelector('.topnav');
+        if(nav){
+          const btn = document.createElement('button');
+          btn.className = 'btn secondary';
+          btn.type = 'button';
+          btn.textContent = '💾 기록 저장 설정';
+          btn.addEventListener('click', ()=>{
+            const current = getEndpoint();
+            const url = prompt('Google Apps Script 웹앱 URL을 입력하세요', current);
+            if(typeof url === 'string'){
+              setEndpoint(url);
+              alert('엔드포인트가 저장되었어요! 페이지를 새로고침하면 적용됩니다.');
+              flushQueue();
+            }
+          });
+          nav.appendChild(btn);
+        }
+        flushQueue();
+      });
     </script>
   </body>
   </html>
-
