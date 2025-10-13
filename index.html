@@ -1,1 +1,219 @@
-hello
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>해나와 해솔이의 놀이 수학</title>
+    <meta name="description" content="해나와 해솔이를 위한 구구단과 덧셈/뺄셈 게임 모음" />
+    <style>
+      :root {
+        --bg: #fff7fb;
+        --bg-accent: radial-gradient(1200px 600px at 10% -10%, #ffe6f4 0%, transparent 60%),
+                      radial-gradient(1000px 500px at 110% 0%, #e8f7ff 0%, transparent 55%),
+                      radial-gradient(800px 400px at 50% 120%, #fff3d9 0%, transparent 55%);
+        --card: #ffffff;
+        --text: #3b2a3f;
+        --muted: #6b5c72;
+        --primary: #ff7ac8;
+        --primary-dark: #e056a9;
+        --secondary: #7bb6ff;
+        --accent: #ffd36e;
+        --shadow: 0 8px 28px rgba(81, 31, 79, 0.12);
+        --radius-lg: 20px;
+        --radius-sm: 12px;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        background-image: var(--bg-accent);
+      }
+
+      .wrap {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      header {
+        padding: 28px 20px 8px;
+        text-align: center;
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(28px, 4.5vw, 44px);
+        letter-spacing: 0.5px;
+        line-height: 1.2;
+        text-shadow: 0 2px 0 #fff, 0 6px 18px rgba(255, 122, 200, 0.25);
+      }
+
+      .title .spark { color: var(--primary); }
+      .title .sky { color: var(--secondary); }
+
+      .subtitle {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: clamp(14px, 2.2vw, 18px);
+      }
+
+      main { padding: 24px 18px 32px; }
+
+      .grid {
+        max-width: 980px;
+        margin: 0 auto;
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .card {
+        position: relative;
+        background: var(--card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: 22px 20px;
+        overflow: hidden;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        outline: 0 solid transparent;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 32px rgba(81, 31, 79, 0.18);
+      }
+
+      .card::after {
+        content: "";
+        position: absolute;
+        right: -30px; bottom: -30px;
+        width: 120px; height: 120px;
+        background: linear-gradient(135deg, rgba(255, 122, 200, 0.18), rgba(123, 182, 255, 0.18));
+        border-radius: 36px;
+        filter: blur(2px);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(90deg, #ffe3f2, #e9f3ff);
+        color: #6a3c56;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .card h3 {
+        margin: 12px 0 6px;
+        font-size: 22px;
+      }
+
+      .desc {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .actions { display: flex; gap: 10px; }
+
+      .btn {
+        appearance: none;
+        border: 0;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35);
+        transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+      }
+
+      .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+      .btn:active { transform: translateY(0); }
+
+      .btn.secondary {
+        background: #eef5ff;
+        color: #2a4a7e;
+        box-shadow: 0 6px 14px rgba(123, 182, 255, 0.25);
+      }
+
+      .emoji { font-size: 22px; line-height: 1; }
+
+      footer {
+        text-align: center;
+        padding: 20px 16px 32px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* 접근성: 키보드 포커스 */
+      .btn:focus-visible, .card:focus-within {
+        outline: 3px solid #ffcaf6;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="title">
+          해나와 해솔이의 <span class="spark">놀이</span><span class="sky">수학</span> 🎀
+        </h1>
+        <p class="subtitle">재미있게 놀면서 구구단과 덧셈·뺄셈을 배워요!</p>
+      </header>
+
+      <main>
+        <section class="grid" aria-label="게임 목록">
+          <article class="card" role="article">
+            <span class="badge" aria-hidden="true">쉬운 곱셈 · 단계별</span>
+            <h3>구구단 ✖️</h3>
+            <p class="desc">노래하듯이 외우고, 퀴즈로 확인해요!</p>
+            <div class="actions">
+              <a class="btn" href="gugudan.html" aria-label="구구단 게임 시작">
+                <span class="emoji" aria-hidden="true">🎮</span>
+                시작하기
+              </a>
+              <a class="btn secondary" href="#" aria-label="구구단 연습 방법 보기">
+                <span class="emoji" aria-hidden="true">📖</span>
+                연습방법
+              </a>
+            </div>
+          </article>
+
+          <article class="card" role="article">
+            <span class="badge" aria-hidden="true">덧셈 · 뺄셈 · 미니퀴즈</span>
+            <h3>덧셈/뺄셈 ➕➖</h3>
+            <p class="desc">기초 계산을 게임처럼! 점수를 모아봐요.</p>
+            <div class="actions">
+              <a class="btn" href="arithmetic.html" aria-label="덧셈/뺄셈 게임 시작">
+                <span class="emoji" aria-hidden="true">🧠</span>
+                시작하기
+              </a>
+              <a class="btn secondary" href="#" aria-label="계산 연습 팁 보기">
+                <span class="emoji" aria-hidden="true">💡</span>
+                연습팁
+              </a>
+            </div>
+          </article>
+        </section>
+      </main>
+
+      <footer>
+        즐거운 공부가 최고의 비밀! 오늘도 화이팅 ✨
+      </footer>
+    </div>
+  </body>
+  </html>
