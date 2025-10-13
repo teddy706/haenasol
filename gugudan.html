@@ -173,6 +173,7 @@
             <div class="status">
               <div>진행: <span id="progress">0/9</span></div>
               <div>점수: <span id="score">0</span></div>
+              <div>연속 정답: <span id="streak">0</span></div>
               <div>시간: <span id="elapsed">0.0s</span></div>
             </div>
             <div class="question" aria-label="문제">
@@ -192,6 +193,7 @@
           <div id="result" class="result" aria-live="polite">
             <div class="score" id="finalScore">0 / 9 점</div>
             <div class="small" id="finalTime">총 시간: 0.0초</div>
+            <div class="small" id="finalStreak">최고 연속 정답: 0개</div>
             <div class="saveStatus" id="saveStatus">기록 저장 준비 완료</div>
             <div style="margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
               <button id="retryBtn" class="btn" type="button">다시 하기</button>
@@ -261,9 +263,11 @@
         progress: document.getElementById('progress'),
         score: document.getElementById('score'),
         elapsed: document.getElementById('elapsed'),
+        streak: document.getElementById('streak'),
         feedback: document.getElementById('feedback'),
         finalScore: document.getElementById('finalScore'),
         finalTime: document.getElementById('finalTime'),
+        finalStreak: document.getElementById('finalStreak'),
         saveStatus: document.getElementById('saveStatus'),
         retryBtn: document.getElementById('retryBtn'),
       };
@@ -277,7 +281,9 @@
         correct: 0,
         startedAt: 0,
         qStartedAt: 0,
-        details: [] // {a,b,user,correctAns,correct,timeMs}
+        streak: 0,
+        bestStreak: 0,
+        details: [] // {a,b,user,correctAns,correct,timeMs,streakAfter}
       };
 
       function buildQuestions(dan, mode){
@@ -302,10 +308,13 @@
         state.idx = 0;
         state.correct = 0;
         state.details = [];
+        state.streak = 0;
+        state.bestStreak = 0;
         state.startedAt = Date.now();
         els.score.textContent = '0';
         els.progress.textContent = `0/${state.questions.length}`;
         els.elapsed.textContent = '0.0s';
+        els.streak.textContent = '0';
         els.feedback.textContent = '';
         hide(els.result); show(els.quiz);
         document.getElementById('ans').value = '';
@@ -334,9 +343,18 @@
         const correct = (!Number.isNaN(user) && user === q.answer);
         if(correct) state.correct++;
         const timeMs = Date.now() - state.qStartedAt;
-        state.details.push({ a:q.a, b:q.b, user: Number.isNaN(user)? null : user, correctAns: q.answer, correct, timeMs });
+        if(correct){
+          state.streak += 1;
+          if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+        } else {
+          state.streak = 0;
+        }
+        els.streak.textContent = String(state.streak);
+        const streakAfter = state.streak;
+        const detail = { a:q.a, b:q.b, user: Number.isNaN(user)? null : user, correctAns: q.answer, correct, timeMs, streakAfter };
+        state.details.push(detail);
         // 개별 문제 기록을 즉시 저장(오프라인 큐 → 엔드포인트 전송)
-        saveQuestionRecord(q, Number.isNaN(user)? null : user, correct, timeMs).catch(()=>{});
+        saveQuestionRecord(q, Number.isNaN(user)? null : user, correct, timeMs, streakAfter).catch(()=>{});
         els.score.textContent = String(state.correct);
         els.feedback.textContent = correct ? '정답! 잘했어요 ✅' : `아쉬워요 😅 정답은 ${q.answer}`;
         els.feedback.className = 'feedback ' + (correct ? 'good' : 'bad');
@@ -358,6 +376,7 @@
         const durationMs = finishedAt - state.startedAt;
         els.finalScore.textContent = `${state.correct} / ${state.questions.length} 점`;
         els.finalTime.textContent = `총 시간: ${(durationMs/1000).toFixed(1)}초`;
+        els.finalStreak.textContent = `최고 연속 정답: ${state.bestStreak}개`;
 
         const payload = {
           type: 'gugudan',
@@ -366,6 +385,7 @@
           dan: state.dan,
           total: state.questions.length,
           correct: state.correct,
+          bestStreak: state.bestStreak,
           startedAt: new Date(state.startedAt).toISOString(),
           finishedAt: new Date(finishedAt).toISOString(),
           durationMs,
@@ -407,7 +427,7 @@
       }
 
       // 개별 문제 저장 페이로드 구성 후 저장
-      async function saveQuestionRecord(q, userValue, isCorrect, timeMs){
+      async function saveQuestionRecord(q, userValue, isCorrect, timeMs, streakAfter){
         const payload = {
           type: 'gugudan_q',
           player: state.player || null,
@@ -418,7 +438,9 @@
           startedAt: new Date(state.qStartedAt).toISOString(),
           finishedAt: new Date().toISOString(),
           durationMs: timeMs,
-          details: [{ a: q.a, b: q.b, user: userValue, correctAns: q.answer, correct: isCorrect, timeMs }],
+          details: [{ a: q.a, b: q.b, user: userValue, correctAns: q.answer, correct: isCorrect, timeMs, streakAfter }],
+          streakAfter,
+          bestStreak: state.bestStreak,
           userAgent: navigator.userAgent
         };
         return saveRecord(payload);
