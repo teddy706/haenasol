@@ -71,24 +71,13 @@
       #final-score { font-size: 20px; margin-bottom: 12px; }
       #result-feedback { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
 
-      .btn-wrap { text-align: center; margin-top: 32px; }
+      .btn-wrap { text-align: center; margin-top: 32px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
       .btn { appearance: none; border: 0; background: var(--primary); color: #fff; font-weight: 800; letter-spacing: 0.3px; border-radius: var(--radius-sm); padding: 14px 20px; font-size: 18px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 14px rgba(142, 109, 229, 0.35); transition: all 0.14s ease; }
       .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
       .btn:disabled { background-color: #d9d2f0; box-shadow: none; cursor: not-allowed; }
-
-      #back-to-main-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        background-color: var(--muted);
-        padding: 10px 14px;
-        font-size: 14px;
-      }
     </style>
   </head>
   <body>
-    <a href="index.html" id="back-to-main-btn" class="btn">🏠 처음으로</a>
     <div class="wrap">
       <header>
         <h1 class="title"><span class="spark">맞춤법</span> 퀴즈 ✏️</h1>
@@ -137,6 +126,7 @@
               <p id="result-feedback"></p>
               <div class="btn-wrap">
                 <button id="restart-btn" class="btn">다른 급수 선택</button>
+                <a href="index.html" class="btn" style="background-color: var(--muted);">🏠 처음으로</a>
               </div>
             </div>
 
