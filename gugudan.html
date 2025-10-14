@@ -539,34 +539,7 @@
       updatePlayerButtons(els.playerSelector.querySelector('.player-btn.active'));
       updateModeButtons(els.modeSelector.querySelector('.mode-btn.active'));
 
-      // 페이지 로드시 오프라인 큐 전송 시도
-      window.addEventListener('load', ()=>{
-        // 헤더 상단에 설정 버튼 추가
-        const nav = document.querySelector('.topnav');
-        if(nav){
-          const btn = document.createElement('button');
-          btn.className = 'btn secondary';
-          btn.type = 'button';
-          btn.textContent = '💾 기록 저장 설정';
-          btn.addEventListener('click', ()=>{
-            const metaTag = document.querySelector('meta[name="gugu-endpoint"]');
-            const hardcoded = (metaTag?.content || '').trim() || (typeof window !== 'undefined' && window.GUGU_ENDPOINT_URL ? String(window.GUGU_ENDPOINT_URL).trim() : '');
-            const current = (localStorage.getItem(EP_LS_KEY) || '').trim() || hardcoded;
-            const url = prompt('Google Apps Script 웹앱 URL을 입력하세요', current);
-            if(typeof url === 'string'){
-              setEndpoint(url);
-              if(hardcoded){
-                alert('저장됨! 단, 코드에 하드코딩된 URL이 있어 로컬 설정보다 우선 적용됩니다. 코드의 meta/script 값을 비우면 로컬 설정이 사용돼요.');
-              } else {
-                alert('엔드포인트가 저장되었어요! 페이지를 새로고침하면 적용됩니다.');
-              }
-              flushQueue();
-            }
-          });
-          nav.appendChild(btn);
-        }
-        flushQueue();
-      });
+
     </script>
   </body>
   </html>
