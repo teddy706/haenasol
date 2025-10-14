@@ -121,7 +121,7 @@ function buildDashboard() {
 function doGet(e) {
   try {
     const sheetName = '2-2'; // Provided by user
-    const ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1vz0b48eKzOgCThNatPnpylz8Wp7cwFp1pRzUGO72EGg/edit?usp=sharing");
+    const ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1S3Q1Aa6LJt7zp-0PfIErR9hGLlbhbqkgofg6oQTIvfo/edit?usp=sharing");
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       throw new Error(`Sheet "${sheetName}" not found.`);
