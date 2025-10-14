@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>덧셈 뺄셈 연습 팁 - 놀이수학</title>
+    <meta name="description" content="덧셈과 뺄셈을 쉽고 재미있게 배우는 여러 가지 팁" />
+    <style>
+      :root {
+        --bg: #f7faff;
+        --bg-accent: radial-gradient(1200px 600px at 10% -10%, #e8f7ff 0%, transparent 60%),
+                      radial-gradient(1000px 500px at 110% 0%, #ffe6f4 0%, transparent 55%),
+                      radial-gradient(800px 400px at 50% 120%, #fff3d9 0%, transparent 55%);
+        --card: #ffffff;
+        --text: #3b2a3f;
+        --muted: #6b5c72;
+        --primary: #7bb6ff;
+        --primary-dark: #5a9ee0;
+        --secondary: #ff7ac8;
+        --accent: #ffd36e;
+        --shadow: 0 8px 28px rgba(31, 68, 81, 0.12);
+        --radius-lg: 20px;
+        --radius-sm: 12px;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        background-image: var(--bg-accent);
+        line-height: 1.7;
+      }
+
+      .wrap {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      header {
+        padding: 28px 20px 8px;
+        text-align: center;
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(28px, 4.5vw, 44px);
+        letter-spacing: 0.5px;
+        line-height: 1.2;
+        text-shadow: 0 2px 0 #fff, 0 6px 18px rgba(123, 182, 255, 0.25);
+      }
+
+      .title .sky { color: var(--primary); }
+
+      main { padding: 24px 18px 32px; }
+
+      .content {
+        max-width: 720px;
+        margin: 0 auto;
+        background: var(--card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: 24px clamp(16px, 4vw, 32px);
+      }
+
+      .content h2 {
+        font-size: 26px;
+        margin: 0 0 16px;
+        color: var(--primary);
+        text-align: center;
+      }
+
+      .content h3 {
+        font-size: 20px;
+        margin: 28px 0 10px;
+        color: var(--primary-dark);
+        border-bottom: 2px solid #eaf6ff;
+        padding-bottom: 8px;
+      }
+
+      .content p {
+        margin: 0 0 12px;
+        font-size: 16px;
+      }
+
+      .content .emoji {
+        font-size: 20px;
+        margin-right: 8px;
+      }
+
+      .content ul {
+        padding-left: 24px;
+        margin: 0 0 16px;
+        list-style-type: '✏️ ';
+      }
+
+      .content li {
+        margin-bottom: 8px;
+        padding-left: 8px;
+      }
+
+      .highlight {
+        background: #f0f8ff;
+        padding: 16px;
+        border-radius: var(--radius-sm);
+        margin: 20px 0;
+      }
+
+      .highlight strong {
+        color: var(--primary);
+      }
+
+      .btn-wrap { text-align: center; margin-top: 32px; }
+
+      .btn {
+        appearance: none;
+        border: 0;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        border-radius: var(--radius-sm);
+        padding: 14px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 6px 14px rgba(123, 182, 255, 0.35);
+        transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+      }
+
+      .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+      .btn:active { transform: translateY(0); }
+
+      footer {
+        text-align: center;
+        padding: 20px 16px 32px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="title">해나와 해솔이의 <span class="sky">놀이</span>수학 🎀</h1>
+      </header>
+
+      <main>
+        <div class="content">
+          <h2><span class="emoji">💡</span> 덧셈 뺄셈, 어떻게 친해질까?</h2>
+          <p>덧셈과 뺄셈은 수를 합치고 나누는 재미있는 놀이야! 우리가 가진 사탕이 몇 개인지, 친구에게 몇 개를 주면 몇 개가 남는지 알려주거든. 계산 박사가 되는 비밀 팁을 알려줄게!</p>
+
+          <h3><span class="emoji">🖐️</span> 1. 내 손가락은 최고의 계산기!</h3>
+          <p>가장 쉽고 빠른 방법! <strong>3 + 2</strong>가 궁금하면, 손가락 3개를 펴고 2개를 더 펴보는 거야. 모두 몇 개? 5개! <strong>5 - 1</strong>은 손가락 5개에서 하나를 접으면 돼. 4개만 남지!</p>
+
+          <h3><span class="emoji">🔟</span> 2. 마법의 숫자 '10'을 만들자!</h3>
+          <p>계산이 빠르고 정확해지는 최고의 비밀이야. 어떤 수를 보면 10을 만들 짝꿍을 바로 떠올리는 연습을 해봐!</p>
+          <ul>
+            <li>1의 짝꿍은 9, 2의 짝꿍은 8, 3의 짝꿍은 7...</li>
+            <li><strong>8 + 5</strong>를 계산해볼까? 8은 10이 되려면 2가 필요해. 5에게서 2를 빌려와 8에게 주면 <strong>10</strong>이 되지! 5는 2를 줬으니 3이 남아. 그래서 답은 <strong>10 + 3 = 13</strong>!</li>
+            <li>뺄셈도 마찬가지! <strong>13 - 7</strong>은? 13에서 3을 먼저 빼서 10을 만들고, 4를 더 빼주면 쉬워! <strong>10 - 4 = 6</strong>!</li>
+          </ul>
+
+          <h3><span class="emoji">🚶‍♂️</span> 3. 수직선 위를 걸어보자!</h3>
+          <p>종이에 0부터 20까지 쭉 이어진 선(수직선)을 그려봐. <strong>5 + 3</strong>은 5에서 오른쪽으로 세 칸 가는 거야. 도착한 곳은 8! <strong>9 - 4</strong>는 9에서 왼쪽으로 네 칸 가는 거지. 도착한 곳은 5!</p>
+
+          <h3><span class="emoji">🍎</span> 4. 가르기와 모으기 놀이</h3>
+          <p>숫자를 여러 가지 방법으로 가르고 모으는 연습을 하면 계산이 정말 빨라져.</p>
+          <ul>
+            <li><strong>5 가르기:</strong> 1과 4, 2와 3으로 가를 수 있어.</li>
+            <li><strong>모으기:</strong> 2와 7을 모으면 9가 돼!</li>
+          </ul>
+
+          <div class="highlight">
+            <p><strong>잊지 마!</strong> 🌟</p>
+            <p>계산은 어려운 공부가 아니라 재미있는 퀴즈야! 오늘 가게에서 본 물건 가격을 더해보고, 내 간식을 동생과 나눠 먹으며 뺄셈을 해보는 건 어떨까? 생활 속에서 수학이랑 친해져 봐!</p>
+          </div>
+
+          <div class="btn-wrap">
+            <a href="index.html" class="btn"><span class="emoji">🏠</span> 처음으로</a>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        즐거운 공부가 최고의 비밀! 오늘도 화이팅 ✨
+      </footer>
+    </div>
+  </body>
+</html>
