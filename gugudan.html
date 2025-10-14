@@ -92,6 +92,23 @@
         box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35);
       }
 
+      .mode-selector { display: flex; gap: 10px; flex-wrap: wrap; }
+      .mode-btn {
+        background: #eef5ff;
+        color: #2a4a7e;
+        box-shadow: none;
+        border: 2px solid transparent;
+        opacity: 0.7;
+      }
+      .mode-btn.active {
+        background: var(--secondary);
+        color: #fff;
+        opacity: 1;
+        border-color: #5592db;
+        box-shadow: 0 6px 14px rgba(123, 182, 255, 0.35);
+      }
+
+
 
       .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35); background: var(--primary); color: #fff; }
       .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
@@ -157,32 +174,18 @@
               </div>
             </div>
             <div class="row">
-              <label for="dan">단 선택</label>
-              <select id="dan" aria-label="연습할 단 선택">
-                <option value="2">2단</option>
-                <option value="3">3단</option>
-                <option value="4">4단</option>
-                <option value="5">5단</option>
-                <option value="6">6단</option>
-                <option value="7">7단</option>
-                <option value="8">8단</option>
-                <option value="9">9단</option>
-              </select>
-            </div>
-            <div class="row">
-              <label for="mode">문제 순서</label>
-              <select id="mode" aria-label="문제 순서 선택">
-                <option value="sequential">처음부터 순서대로</option>
-                <option value="reverse">거꾸로</option>
-                <option value="random">랜덤(중복 없음)</option>
-              </select>
+              <label>문제 순서</label>
+              <div id="mode-selector" class="mode-selector">
+                <button class="btn mode-btn active" data-mode="sequential">처음부터</button>
+                <button class="btn mode-btn" data-mode="reverse">거꾸로</button>
+                <button class="btn mode-btn" data-mode="random">랜덤</button>
+              </div>
             </div>
             <div class="row">
               <button id="startBtn" class="btn"><span aria-hidden="true">🎮</span> 시작하기</button>
               <button id="resetBtn" class="btn ghost" type="button"><span aria-hidden="true">🧹</span> 초기화</button>
             </div>
             <div class="meta">
-              <span class="badge"><span aria-hidden>🧮</span> 2단 ~ 9단</span>
               <span class="badge"><span aria-hidden>✨</span> 9문제</span>
               <span class="badge"><span aria-hidden>💡</span> 엔터키로 제출</span>
             </div>
@@ -270,8 +273,7 @@
         quiz: document.getElementById('quiz'),
         result: document.getElementById('result'),
         playerSelector: document.getElementById('player-selector'),
-        dan: document.getElementById('dan'),
-        mode: document.getElementById('mode'),
+        modeSelector: document.getElementById('mode-selector'),
         startBtn: document.getElementById('startBtn'),
         resetBtn: document.getElementById('resetBtn'),
         qA: document.getElementById('qA'),
@@ -321,8 +323,9 @@
 
       function start(){
         state.player = els.playerSelector.querySelector('.active').dataset.player || '해나';
-        state.dan = parseInt(els.dan.value,10);
-        state.mode = els.mode.value;
+        // 게임 시작 시 2단부터 9단까지 랜덤으로 선택
+        state.dan = Math.floor(Math.random() * 8) + 2;
+        state.mode = els.modeSelector.querySelector('.active').dataset.mode || 'sequential';
         state.questions = buildQuestions(state.dan, state.mode);
         state.idx = 0;
         state.correct = 0;
@@ -335,7 +338,9 @@
         els.elapsed.textContent = '0.0s';
         els.streak.textContent = '0';
         els.feedback.textContent = '';
-        hide(els.result); show(els.quiz);
+        hide(els.setup);
+        hide(els.result);
+        show(els.quiz);
         document.getElementById('ans').value = '';
         nextQuestion();
         timerTick();
@@ -473,18 +478,29 @@
           state.player = e.target.dataset.player;
         }
       });
+
+      els.modeSelector.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mode-btn')) {
+          els.modeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+          e.target.classList.add('active');
+          state.mode = e.target.dataset.mode;
+        }
+      });
+
       els.startBtn.addEventListener('click', start);
       els.resetBtn.addEventListener('click', ()=>{
+        hide(els.quiz);
+        hide(els.result);
+        show(els.setup);
         // '해나' 버튼을 클릭하여 선택 상태를 초기화합니다.
         els.playerSelector.querySelector('[data-player="해나"]').click();
-        els.dan.value = '2';
-        els.mode.value = 'sequential';
+        // '처음부터' 버튼을 클릭하여 모드를 초기화합니다.
+        els.modeSelector.querySelector('[data-mode="sequential"]').click();
       });
       els.submitBtn.addEventListener('click', ()=> submit(false));
       els.skipBtn.addEventListener('click', ()=> submit(true));
       els.retryBtn.addEventListener('click', ()=>{
-        hide(els.result); show(els.quiz); // 재사용 흐름 간단화
-        start();
+        hide(els.result); show(els.setup);
       });
 
 
