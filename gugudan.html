@@ -134,8 +134,10 @@
           <div id="setup">
             <div class="row">
               <label for="player">이름</label>
-              <input id="player" type="text" inputmode="text" placeholder="이름(선택)" aria-describedby="playerHelp" />
-              <span id="playerHelp" class="small">기록 저장에 사용돼요.</span>
+              <select id="player" aria-label="이름 선택">
+                <option value="해나">해나</option>
+                <option value="해솔">해솔</option>
+              </select>
             </div>
             <div class="row">
               <label for="dan">단 선택</label>
@@ -449,7 +451,7 @@
       // 이벤트 바인딩
       els.startBtn.addEventListener('click', start);
       els.resetBtn.addEventListener('click', ()=>{
-        els.player.value = '';
+        els.player.value = '해나';
         els.dan.value = '2';
         els.mode.value = 'sequential';
       });
