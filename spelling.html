@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>받아쓰기 퀴즈 - 놀이교육</title>
-    <meta name="description" content="재미있는 퀴즈로 배우는 받아쓰기" />
+    <title>맞춤법 퀴즈 - 놀이교육</title>
+    <meta name="description" content="재미있는 퀴즈로 배우는 우리말 맞춤법" />
     <style>
       :root {
         --bg: #f5f3ff;
@@ -115,7 +115,7 @@
   <body>
     <div class="wrap">
       <header>
-        <h1 class="title"><span class="spark">받아쓰기</span> 퀴즈 ✏️</h1>
+        <h1 class="title"><span class="spark">맞춤법</span> 퀴즈 ✏️</h1>
       </header>
 
       <main>
@@ -349,36 +349,149 @@
       function checkCanStart() { startBtn.disabled = !(currentPlayer && selectedLevel); }
 
       // --- 오답 생성기 ---
+      /**
+       * [메인 함수] 정답 문장을 받아 4개의 그럴듯한 오답 문장 배열을 생성합니다.
+       * @param {string} correctSentence - 정답 문장
+       * @returns {string[]} - 생성된 4개의 오답 문장 배열
+       */
       function generateIncorrectOptions(correctSentence) {
-        const incorrectSentences = new Set();
-        const mutators = [mutateSpacing, mutateParticles, mutateEndings, mutateTypo];
-        let attempts = 0;
-        while (incorrectSentences.size < 4 && attempts < 50) {
-          let mutated = correctSentence;
-          const mutationsToApply = shuffleArray(mutators).slice(0, Math.random() < 0.7 ? 1 : 2);
-          for (const mutator of mutationsToApply) { mutated = mutator(mutated); }
-          if (mutated !== correctSentence) incorrectSentences.add(mutated);
-          attempts++;
-        }
-        const fallbacks = [ correctSentence.replace(' ', ''), correctSentence + '다.', correctSentence.slice(0, -1), correctSentence.split('').reverse().join('') ];
-        let fallbackIndex = 0;
-        while (incorrectSentences.size < 4 && fallbackIndex < fallbacks.length) {
-            const fallback = fallbacks[fallbackIndex];
-            if (fallback !== correctSentence && !incorrectSentences.has(fallback)) incorrectSentences.add(fallback);
-            fallbackIndex++;
-        }
-        return Array.from(incorrectSentences);
+          // --- 데이터 소스 ---
+          // 각 데이터는 [정답]: '오답' 또는 ['오답1', '오답2'] 형태로 구성됩니다.
+
+          // 1. 조사 (앞 글자 받침 유무에 따라 혼동하기 쉬운 조사)
+          const particleMap = {
+              '는': '은', '은': '는', '가': '이', '이': '가', '를': '을', '을': '를',
+              '와': '과', '과': '와', '로': '으로', '으로': '로', '랑': '이랑', '이랑': '랑'
+          };
+          // 2. 어미 (문장 끝맺음 또는 연결 시 자주 틀리는 표현)
+          const endingMap = {
+              '습니다': '읍니다', '읍니다': '습니다', '어요': '여요', '여요': '어요',
+              '예요': '에요', '에요': '예요', '대요': '데요', '데요': '대요',
+              '게요': '께요', '께요': '게요', '든지': '던지', '던지': '든지',
+              '로서': '로써', '로써': '로서'
+          };
+          // 3. 발음/모양 오타 (발음이 비슷하거나 모양이 헷갈리는 표현)
+          const typoMap = {
+              '되': '돼', '돼': '되', 'ㅔ': 'ㅐ', 'ㅐ': 'ㅔ', 'ㅚ': 'ㅙ', 'ㅙ': 'ㅚ',
+              '의': '에', '에': '의', 'ㅅ': 'ㅆ', 'ㅆ': 'ㅅ', 'ㅈ': 'ㅊ', 'ㅊ': 'ㅈ',
+              'ㄱ': 'ㄲ', 'ㄲ': 'ㄱ', 'ㅂ': 'ㅃ', 'ㅃ': 'ㅂ', 'ㄷ': 'ㄸ', 'ㄸ': 'ㄷ',
+              '낫': '낮', '낮': '낫', '않': '안', '안': '않'
+          };
+          // 4. 의미 혼동 표현 (의미는 다르지만 자주 헷갈리는 단어)
+          const commonMistakeMap = {
+              '어떻게': '어떡해', '어떡해': '어떻게', '가르치다': '가리키다', '가리키다': '가르치다',
+              '맞히다': '맞추다', '맞추다': '맞히다', '바라요': '바래요', '바래요': '바라요',
+              '며칠': '몇일', '몇일': '며칠', '이따가': '있다가', '있다가': '이따가',
+              '붙이다': '부치다', '부치다': '붙이다'
+          };
+          // 5. 띄어쓰기 (띄어쓰기를 틀리기 쉬운 표현)
+          const spacingMap = {
+              '할 수 있다': ['할수있다', '할 수있다'], '뿐만 아니라': ['뿐만아니라', '뿐만 아니라'],
+              '보는 대로': ['보는대로', '보는 대로'], '나만큼': ['나 만큼', '나 만큼'],
+              '너밖에': ['너 밖에', '너 밖에'], '하는 중': ['하는중', '하는 중']
+          };
+
+          // --- 헬퍼 함수 ---
+          const shuffleArray = (array) => {
+              for (let i = array.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [array[i], array[j]] = [array[j], array[i]];
+              }
+              return array;
+          };
+
+          // --- 변형(Mutation) 함수들 ---
+
+          /**
+           * 맵(Map) 데이터를 기반으로 문장에서 키를 찾아 값으로 치환합니다.
+           * 문장 내에서 치환 가능한 모든 경우를 찾은 뒤, 그중 하나를 무작위로 선택하여 변형합니다.
+           */
+          const mutateByMap = (sentence, map) => {
+              const mutations = [];
+              for (const [key, value] of Object.entries(map)) {
+                  let index = sentence.indexOf(key);
+                  while (index !== -1) {
+                      const replacement = Array.isArray(value) ? value[Math.floor(Math.random() * value.length)] : value;
+                      mutations.push({ index, key, replacement });
+                      index = sentence.indexOf(key, index + 1);
+                  }
+              }
+              if (mutations.length === 0) return sentence;
+
+              const mutation = mutations[Math.floor(Math.random() * mutations.length)];
+              return sentence.substring(0, mutation.index) + mutation.replacement + sentence.substring(mutation.index + mutation.key.length);
+          };
+
+          // 띄어쓰기 변형: spacingMap에 있는 표현을 우선 적용하고, 없으면 임의로 단어를 합치거나 나눕니다.
+          const mutateSpacing = (sentence) => {
+              const targetedMutation = mutateByMap(sentence, spacingMap);
+              if (targetedMutation !== sentence) return targetedMutation;
+
+              const words = sentence.split(' ');
+              if (words.length < 2) return sentence;
+
+              const i = Math.floor(Math.random() * (words.length - 1));
+              if (Math.random() > 0.5 && words[i].length > 1) { // 단어 나누기
+                  const splitPoint = Math.floor(Math.random() * (words[i].length - 1)) + 1;
+                  words.splice(i, 1, words[i].substring(0, splitPoint), words[i].substring(splitPoint));
+              } else { // 단어 합치기
+                  words[i] = words[i] + words[i + 1];
+                  words.splice(i + 1, 1);
+              }
+              return words.join(' ');
+          };
+
+          const mutators = [
+              mutateSpacing,
+              (s) => mutateByMap(s, particleMap),
+              (s) => mutateByMap(s, endingMap),
+              (s) => mutateByMap(s, typoMap),
+              (s) => mutateByMap(s, commonMistakeMap),
+          ];
+
+          // --- 메인 로직 ---
+          const incorrectSentences = new Set();
+          let attempts = 0;
+
+          // 1. 지능적 변형 시도 (오류를 1~2개 조합하여 생성)
+          while (incorrectSentences.size < 4 && attempts < 100) {
+              let mutated = correctSentence;
+              const mutationsToApply = shuffleArray([...mutators]).slice(0, Math.random() < 0.6 ? 1 : 2);
+
+              for (const mutator of mutationsToApply) {
+                  mutated = mutator(mutated);
+              }
+
+              if (mutated !== correctSentence) {
+                  incorrectSentences.add(mutated);
+              }
+              attempts++;
+          }
+
+          // 2. 폴백 로직 (생성된 오답이 4개 미만일 경우, 단일 변형으로 채우기)
+          const fallbackMutators = shuffleArray([...mutators]);
+          while (incorrectSentences.size < 4 && fallbackMutators.length > 0) {
+              const mutator = fallbackMutators.pop();
+              const fallback = mutator(correctSentence);
+              if (fallback !== correctSentence && !incorrectSentences.has(fallback)) {
+                  incorrectSentences.add(fallback);
+              }
+          }
+          
+          // 3. 최후의 폴백 (그래도 부족할 경우, 단순한 방법으로 채우기)
+          const lastResorts = [
+              correctSentence.replace(/ /g, ''), // 모든 띄어쓰기 제거
+              correctSentence.slice(0, -1) + '?', // 마지막 글자를 물음표로 바꾸기
+          ];
+          let i = 0;
+          while(incorrectSentences.size < 4 && i < lastResorts.length){
+              if(lastResorts[i] !== correctSentence) incorrectSentences.add(lastResorts[i]);
+              i++;
+          }
+
+          return Array.from(incorrectSentences);
       }
 
-      const particleMap = { '는': '은', '은': '는', '가': '이', '이': '가', '를': '을', '을': '를', '와': '과', '과': '와', '한테': '에게', '에게': '한테' };
-      const endingMap = { '습니다': '읍니다', '어요': '여요', '예요': '에요', '에요': '예요' };
-      const typoMap = { '되': '돼', '돼': '되', 'ㅔ': 'ㅐ', 'ㅐ': 'ㅔ' };
-
-      function mutateParticles(s) { const w = s.split(' '), i = Math.floor(Math.random() * w.length); for (const k in particleMap) { if (w[i].endsWith(k)) { w[i] = w[i].slice(0, -k.length) + particleMap[k]; return w.join(' '); } } return s; }
-      function mutateEndings(s) { for (const k in endingMap) { if (s.endsWith(k)) { return s.slice(0, -k.length) + endingMap[k]; } } return s; }
-      function mutateTypo(s) { const c = s.split(''), i = Math.floor(Math.random() * c.length); if (typoMap[c[i]]) { c[i] = typoMap[c[i]]; return c.join(''); } return s; }
-      function mutateSpacing(s) { const w = s.split(' '); if (w.length < 2) return s; const i = Math.floor(Math.random() * (w.length - 1)); if (Math.random() > 0.5) { w[i] += w[i+1]; w.splice(i+1, 1); } else { const wd = w[i]; if(wd.length > 2) { const sp = Math.floor(Math.random()*(wd.length-1))+1; w.splice(i, 1, wd.slice(0, sp), wd.slice(sp)); } } return w.join(' '); }
-      function shuffleArray(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
       // --- 이벤트 리스너 ---
       playerContainer.addEventListener('click', e => {
