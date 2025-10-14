@@ -212,6 +212,26 @@
         return array;
       };
 
+      // 시트에 있는 다양한 열 이름을 통일된 구조로 변환해 문제 데이터를 만든다.
+      const normalizeQuestionRecord = (record) => {
+        if (!record || typeof record !== 'object') return null;
+
+        const levelKeys = ['급수', '레벨', 'Level', 'level', '단계'];
+        const sentenceKeys = ['내용', '문장', '정답', '정답문장', '올바른문장', '문제'];
+
+        const rawLevel = levelKeys.map(key => record[key]).find(value => value !== undefined && value !== null && String(value).trim() !== '');
+        const rawSentence = sentenceKeys.map(key => record[key]).find(value => value !== undefined && value !== null && String(value).trim() !== '');
+
+        if (rawLevel === undefined || rawSentence === undefined) return null;
+
+        const level = String(rawLevel).trim();
+        const sentence = String(rawSentence).trim();
+
+        if (!level || !sentence) return null;
+
+        return { level, sentence, raw: record };
+      };
+
       // --- 데이터 로딩 ---
       async function fetchQuestions() {
         try {
@@ -228,11 +248,13 @@
                 handleError('시트에서 문제 데이터를 찾을 수 없습니다. 시트가 비어있거나 형식이 올바른지 확인해주세요.');
                 return;
             }
-            allQuestions = json.data.filter(q => q.급수 && q.내용);
-            if (allQuestions.length === 0) {
-                handleError('시트에 \'급수\'와 \'내용\' 열이 올바르게 채워져 있는지 확인해주세요.');
-                return;
+            const normalized = json.data.map(normalizeQuestionRecord).filter(Boolean);
+            if (normalized.length === 0) {
+              const sampleHeaders = Array.isArray(json.data) && json.data.length > 0 ? Object.keys(json.data[0]).join(', ') : '없음';
+              handleError(`시트에서 사용할 수 있는 문제를 찾지 못했습니다. 사용 가능한 헤더: ${sampleHeaders}`);
+              return;
             }
+            allQuestions = normalized;
             populateLevels();
             showScreen('start');
           } else {
@@ -245,11 +267,17 @@
       }
 
       function populateLevels() {
-        const levels = [...new Set(allQuestions.map(q => q.급수))].sort((a, b) => a - b);
+        const levels = [...new Set(allQuestions.map(q => q.level))].sort((a, b) => {
+          const numA = Number(a);
+          const numB = Number(b);
+          if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
+          return String(a).localeCompare(String(b), 'ko');
+        });
         levelContainer.innerHTML = '';
         levels.forEach(level => {
           const button = document.createElement('button');
-          button.textContent = `${level}급`;
+          const label = /급$/.test(level) ? level : `${level}급`;
+          button.textContent = label;
           button.className = 'level-btn';
           button.dataset.level = level;
           levelContainer.appendChild(button);
@@ -270,7 +298,7 @@
 
         quizStartTime = new Date();
         quizDetails = [];
-        currentQuestions = allQuestions.filter(q => q.급수 == selectedLevel);
+        currentQuestions = allQuestions.filter(q => q.level == selectedLevel);
         for (let i = currentQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
@@ -295,7 +323,7 @@
         questionCounter.textContent = `문제 ${currentQuestionIndex + 1} / ${currentQuestions.length}`;
         scoreCounter.textContent = `점수: ${score}`;
 
-        const correctSentence = currentQuestions[currentQuestionIndex].내용;
+        const correctSentence = currentQuestions[currentQuestionIndex].sentence;
         const incorrectOptions = generateIncorrectOptions(correctSentence);
         const options = shuffleArray([correctSentence, ...incorrectOptions]);
 
