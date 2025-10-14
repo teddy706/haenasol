@@ -77,8 +77,20 @@
       }
 
       .player-selector { display: flex; gap: 10px; }
-      .player-btn { background: #eef5ff; color: #2a4a7e; box-shadow: none; }
-      .player-btn.active { background: var(--primary); color: #fff; box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35); }
+      .player-btn {
+        background: #eef5ff;
+        color: #2a4a7e;
+        box-shadow: none;
+        border: 2px solid transparent;
+        opacity: 0.7;
+      }
+      .player-btn.active {
+        background: var(--primary);
+        color: #fff;
+        opacity: 1;
+        border-color: var(--primary-dark);
+        box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35);
+      }
 
 
       .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35); background: var(--primary); color: #fff; }
@@ -463,9 +475,8 @@
       });
       els.startBtn.addEventListener('click', start);
       els.resetBtn.addEventListener('click', ()=>{
-        els.playerSelector.querySelector('[data-player="해나"]').classList.add('active');
-        els.playerSelector.querySelector('[data-player="해솔"]').classList.remove('active');
-        state.player = '해나';
+        // '해나' 버튼을 클릭하여 선택 상태를 초기화합니다.
+        els.playerSelector.querySelector('[data-player="해나"]').click();
         els.dan.value = '2';
         els.mode.value = 'sequential';
       });
