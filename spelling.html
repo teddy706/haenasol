@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>받아쓰기 퀴즈 - 놀이교육</title>
+    <title>맞춤법 퀴즈 - 놀이교육</title>
     <meta name="description" content="재미있는 퀴즈로 배우는 우리말 맞춤법" />
     <style>
       :root {
@@ -24,15 +24,7 @@
       }
 
       * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
-        color: var(--text);
-        background: var(--bg);
-        background-image: var(--bg-accent);
-        line-height: 1.6;
-      }
-
+      body { margin: 0; font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; color: var(--text); background: var(--bg); background-image: var(--bg-accent); line-height: 1.6; }
       .wrap { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; }
       header { padding: 28px 20px 8px; text-align: center; }
       .title { margin: 0; font-size: clamp(28px, 4.5vw, 40px); letter-spacing: 0.5px; line-height: 1.2; text-shadow: 0 2px 0 #fff, 0 6px 18px rgba(142, 109, 229, 0.2); }
@@ -41,101 +33,48 @@
       footer { text-align: center; padding: 20px 16px 32px; color: var(--muted); font-size: 13px; }
 
       #quiz-app { max-width: 700px; margin: 0 auto; }
-      .quiz-container {
-        background: var(--card);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        padding: 24px clamp(16px, 4vw, 32px);
-      }
-
-      /* --- Screens --- */
+      .quiz-container { background: var(--card); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 24px clamp(16px, 4vw, 32px); }
       .screen { display: none; }
       .screen.active { display: block; }
 
-      /* --- Loader --- */
-      .loader {
-        text-align: center;
-        padding: 40px;
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--muted);
-      }
-      .loader::before {
-        content: '⏳';
-        display: block;
-        font-size: 40px;
-        margin-bottom: 12px;
-        animation: spin 1.5s linear infinite;
-      }
+      .loader { text-align: center; padding: 40px; font-size: 18px; font-weight: 700; color: var(--muted); }
+      .loader::before { content: '⏳'; display: block; font-size: 40px; margin-bottom: 12px; animation: spin 1.5s linear infinite; }
       @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-      /* --- Start Screen --- */
       #start-screen h2 { text-align: center; font-size: 24px; color: var(--primary); margin: 0 0 24px; }
-      .level-select-wrap { margin-bottom: 20px; }
-      .level-select-wrap label { font-weight: 700; margin-bottom: 8px; display: block; }
-      #level-select {
-        width: 100%;
-        padding: 14px;
-        font-size: 18px;
-        border-radius: var(--radius-sm);
-        border: 2px solid #e8e4f5;
-        background-color: #fff;
-        font-family: inherit;
-      }
-
-      /* --- Quiz Screen --- */
-      #quiz-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        font-size: 18px;
-        font-weight: 700;
-      }
-      #question-counter { color: var(--primary); }
-      #score-counter { color: var(--muted); }
-      #question-text {
-        font-size: 20px;
-        font-weight: 700;
-        text-align: center;
-        margin: 0 0 24px;
-        color: var(--primary-dark);
-      }
-      #options-container { display: grid; grid-template-columns: 1fr; gap: 12px; }
-      .option-btn {
-        appearance: none;
-        border: 2px solid #e8e4f5;
-        background: #fcfbff;
-        color: var(--text);
-        font-weight: 600;
-        border-radius: var(--radius-sm);
-        padding: 16px;
-        font-size: 17px;
-        cursor: pointer;
-        text-align: left;
+      .setting-group { margin-bottom: 24px; }
+      .setting-group label { font-weight: 700; margin-bottom: 10px; display: block; font-size: 18px; color: var(--primary-dark); }
+      
+      .player-select-container, .level-buttons-container { display: flex; gap: 10px; flex-wrap: wrap; }
+      .player-btn, .level-btn {
+        flex-grow: 1; appearance: none; border: 2px solid #e8e4f5; background: #fcfbff; color: var(--text);
+        font-weight: 700; border-radius: var(--radius-sm); padding: 14px; font-size: 18px; cursor: pointer;
         transition: all 0.15s ease;
       }
+      .player-btn:hover, .level-btn:hover { transform: translateY(-2px); border-color: var(--primary); }
+      .player-btn.active, .level-btn.active { background-color: var(--primary); color: #fff; border-color: var(--primary); }
+
+      #quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 18px; font-weight: 700; }
+      #quiz-player { color: var(--primary-dark); }
+      #question-counter { color: var(--primary); }
+      #score-counter { color: var(--muted); }
+      #question-text { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 24px; color: var(--primary-dark); }
+      #options-container { display: grid; grid-template-columns: 1fr; gap: 12px; }
+      .option-btn { appearance: none; border: 2px solid #e8e4f5; background: #fcfbff; color: var(--text); font-weight: 600; border-radius: var(--radius-sm); padding: 16px; font-size: 17px; cursor: pointer; text-align: left; transition: all 0.15s ease; }
       .option-btn:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--primary); background: #f9f7ff; }
       .option-btn.correct { background-color: #e8f9f1; border-color: var(--correct); color: #1e8449; font-weight: 800; }
       .option-btn.incorrect { background-color: #ffeded; border-color: var(--incorrect); color: #c0392b; }
       .option-btn:disabled { cursor: default; }
 
-      /* --- Result Screen --- */
       #result-screen { text-align: center; }
       #result-screen h2 { font-size: 28px; color: var(--primary); margin: 0 0 12px; }
       #final-score { font-size: 20px; margin-bottom: 12px; }
       #result-feedback { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
 
-      /* --- Common Button --- */
-      .btn-wrap { text-align: center; margin-top: 24px; }
-      .btn {
-        appearance: none; border: 0; background: var(--primary); color: #fff; font-weight: 800;
-        letter-spacing: 0.3px; border-radius: var(--radius-sm); padding: 14px 20px; font-size: 18px;
-        cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-        box-shadow: 0 6px 14px rgba(142, 109, 229, 0.35);
-        transition: transform 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
-      }
+      .btn-wrap { text-align: center; margin-top: 32px; }
+      .btn { appearance: none; border: 0; background: var(--primary); color: #fff; font-weight: 800; letter-spacing: 0.3px; border-radius: var(--radius-sm); padding: 14px 20px; font-size: 18px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 14px rgba(142, 109, 229, 0.35); transition: all 0.14s ease; }
       .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+      .btn:disabled { background-color: #d9d2f0; box-shadow: none; cursor: not-allowed; }
     </style>
   </head>
   <body>
@@ -148,23 +87,29 @@
         <div id="quiz-app">
           <div class="quiz-container">
             
-            <div id="loader" class="screen active">
-              <div class="loader">문제 불러오는 중...</div>
-            </div>
+            <div id="loader" class="screen active"><div class="loader">문제 불러오는 중...</div></div>
 
             <div id="start-screen" class="screen">
               <h2>맞춤법 퀴즈</h2>
-              <div class="level-select-wrap">
-                <label for="level-select">도전할 급수를 선택하세요!</label>
-                <select id="level-select"></select>
+              <div class="setting-group">
+                <label>누가 풀 건가요?</label>
+                <div class="player-select-container">
+                  <button class="player-btn" data-player="해나">해나</button>
+                  <button class="player-btn" data-player="해솔">해솔</button>
+                </div>
+              </div>
+              <div class="setting-group">
+                <label>도전할 급수를 선택하세요!</label>
+                <div id="level-buttons-container"></div>
               </div>
               <div class="btn-wrap">
-                <button id="start-btn" class="btn">퀴즈 시작! 🚀</button>
+                <button id="start-btn" class="btn" disabled>퀴즈 시작! 🚀</button>
               </div>
             </div>
 
             <div id="quiz-screen" class="screen">
               <div id="quiz-header">
+                <span id="quiz-player"></span>
                 <span id="question-counter"></span>
                 <span id="score-counter"></span>
               </div>
@@ -198,17 +143,23 @@
       const startScreen = document.getElementById('start-screen');
       const quizScreen = document.getElementById('quiz-screen');
       const resultScreen = document.getElementById('result-screen');
-      const levelSelect = document.getElementById('level-select');
       const startBtn = document.getElementById('start-btn');
       const restartBtn = document.getElementById('restart-btn');
       const optionsContainer = document.getElementById('options-container');
       const questionCounter = document.getElementById('question-counter');
       const scoreCounter = document.getElementById('score-counter');
+      const playerContainer = document.querySelector('.player-select-container');
+      const levelContainer = document.getElementById('level-buttons-container');
+      const quizPlayer = document.getElementById('quiz-player');
 
       let allQuestions = [];
       let currentQuestions = [];
       let currentQuestionIndex = 0;
       let score = 0;
+      let currentPlayer = null;
+      let selectedLevel = null;
+      let quizStartTime;
+      let quizDetails = [];
 
       // --- 데이터 로딩 ---
       async function fetchQuestions() {
@@ -216,22 +167,23 @@
           const response = await fetch(WEB_APP_URL);
           const json = await response.json();
           if (json.ok && Array.isArray(json.data)) {
-            allQuestions = json.data.filter(q => q.급수 && q.내용); // 유효한 데이터만 필터링
+            allQuestions = json.data.filter(q => q.급수 && q.내용);
             populateLevels();
             showScreen('start');
-          } else {
-            handleError('데이터 형식이 올바르지 않습니다.');
-          }
-        } catch (error) {
-          handleError('데이터를 불러오는 데 실패했습니다. 인터넷 연결을 확인해주세요.');
-        }
+          } else { handleError('데이터 형식이 올바르지 않습니다.'); }
+        } catch (error) { handleError('데이터를 불러오는 데 실패했습니다. 인터넷 연결을 확인해주세요.'); }
       }
 
       function populateLevels() {
-        const levels = [...new Set(allQuestions.map(q => q.급수))];
-        levelSelect.innerHTML = levels
-          .map(level => `<option value="${level}">${level}급</option>`)
-          .join('');
+        const levels = [...new Set(allQuestions.map(q => q.급수))].sort();
+        levelContainer.innerHTML = '';
+        levels.forEach(level => {
+          const button = document.createElement('button');
+          button.textContent = `${level}급`;
+          button.className = 'level-btn';
+          button.dataset.level = level;
+          levelContainer.appendChild(button);
+        });
       }
 
       // --- 화면 전환 ---
@@ -240,16 +192,15 @@
         document.getElementById(`${screenName}-screen`).classList.add('active');
       }
 
-      function handleError(message) {
-        loader.innerHTML = `😢<br>${message}`;
-      }
+      function handleError(message) { loader.innerHTML = `😢<br>${message}`; }
 
       // --- 퀴즈 로직 ---
       function startQuiz() {
-        const selectedLevel = levelSelect.value;
+        if (!currentPlayer || !selectedLevel) return;
+
+        quizStartTime = new Date();
+        quizDetails = [];
         currentQuestions = allQuestions.filter(q => q.급수 == selectedLevel);
-        
-        // Fisher-Yates shuffle
         for (let i = currentQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
@@ -257,12 +208,13 @@
 
         currentQuestionIndex = 0;
         score = 0;
+        quizPlayer.textContent = `도전자: ${currentPlayer}`;
         showScreen('quiz');
         displayQuestion();
       }
 
       function displayQuestion() {
-        resetOptions();
+        optionsContainer.innerHTML = '';
         if (currentQuestionIndex >= currentQuestions.length) {
           showResult();
           return;
@@ -273,7 +225,6 @@
 
         const correctSentence = currentQuestions[currentQuestionIndex].내용;
         const incorrectOptions = generateIncorrectOptions(correctSentence);
-        
         const options = shuffleArray([correctSentence, ...incorrectOptions]);
 
         options.forEach(optionText => {
@@ -289,6 +240,12 @@
         const isCorrect = selected === correct;
         if (isCorrect) score++;
 
+        quizDetails.push({
+          question: correct,
+          userAnswer: selected,
+          isCorrect: isCorrect
+        });
+
         Array.from(optionsContainer.children).forEach(btn => {
           if (btn.textContent === correct) btn.classList.add('correct');
           else btn.classList.add('incorrect');
@@ -302,129 +259,103 @@
       }
 
       function showResult() {
+        const finishedAt = new Date();
+        const durationMs = finishedAt - quizStartTime;
+
         showScreen('result');
-        document.getElementById('final-score').textContent = `총 ${currentQuestions.length}문제 중 ${score}개를 맞혔어요!`;
+        document.getElementById('final-score').textContent = `${currentPlayer}, 총 ${currentQuestions.length}문제 중 ${score}개를 맞혔어요!`;
         let feedback = "참 잘했어요! 훌륭해요! 🥳";
         const accuracy = score / currentQuestions.length;
         if (accuracy < 0.5) feedback = "조금 더 연습해볼까요? 화이팅! 💪";
         else if (accuracy < 0.8) feedback = "아는 단어가 점점 많아지고 있어요! 🤩";
         document.getElementById('result-feedback').textContent = feedback;
+
+        const resultData = {
+          type: 'spelling',
+          player: currentPlayer,
+          level: selectedLevel,
+          total: currentQuestions.length,
+          correct: score,
+          startedAt: quizStartTime.toISOString(),
+          finishedAt: finishedAt.toISOString(),
+          durationMs: durationMs,
+          userAgent: navigator.userAgent,
+          details: quizDetails
+        };
+        saveResult(resultData);
+      }
+      
+      async function saveResult(data) {
+        try {
+          await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // no-cors for fire-and-forget
+            cache: 'no-cache',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          });
+        } catch (error) {
+          console.error('Error saving result:', error);
+        }
       }
 
-      function resetOptions() {
-        optionsContainer.innerHTML = '';
+      function checkCanStart() {
+          startBtn.disabled = !(currentPlayer && selectedLevel);
       }
 
-      // --- 오답 생성기 (핵심 로직) ---
+      // --- 오답 생성기 ---
       function generateIncorrectOptions(correctSentence) {
         const incorrectSentences = new Set();
         const mutators = [mutateSpacing, mutateParticles, mutateEndings, mutateTypo];
         let attempts = 0;
-
         while (incorrectSentences.size < 4 && attempts < 50) {
           let mutated = correctSentence;
           const mutationsToApply = shuffleArray(mutators).slice(0, Math.random() < 0.7 ? 1 : 2);
-          for (const mutator of mutationsToApply) {
-            mutated = mutator(mutated);
-          }
-
-          if (mutated !== correctSentence) {
-            incorrectSentences.add(mutated);
-          }
+          for (const mutator of mutationsToApply) { mutated = mutator(mutated); }
+          if (mutated !== correctSentence) incorrectSentences.add(mutated);
           attempts++;
         }
-
-        // Fallback to ensure we always have 4 incorrect options
-        const fallbacks = [
-          correctSentence.replace(' ', ''), // remove first space
-          correctSentence + '다.',
-          correctSentence.slice(0, -1),
-          correctSentence.split('').reverse().join('') // reverse it
-        ];
-
+        const fallbacks = [ correctSentence.replace(' ', ''), correctSentence + '다.', correctSentence.slice(0, -1), correctSentence.split('').reverse().join('') ];
         let fallbackIndex = 0;
         while (incorrectSentences.size < 4 && fallbackIndex < fallbacks.length) {
             const fallback = fallbacks[fallbackIndex];
-            if (fallback !== correctSentence) {
-                incorrectSentences.add(fallback);
-            }
+            if (fallback !== correctSentence && !incorrectSentences.has(fallback)) incorrectSentences.add(fallback);
             fallbackIndex++;
         }
-
         return Array.from(incorrectSentences);
       }
 
       const particleMap = { '는': '은', '은': '는', '가': '이', '이': '가', '를': '을', '을': '를', '와': '과', '과': '와', '한테': '에게', '에게': '한테' };
-      const endingMap = { '습니다': '읍니다', '어요': '여요', '예요': '에요', '에요': '예요', '습니다': '습니다' };
+      const endingMap = { '습니다': '읍니다', '어요': '여요', '예요': '에요', '에요': '예요' };
       const typoMap = { '되': '돼', '돼': '되', 'ㅔ': 'ㅐ', 'ㅐ': 'ㅔ' };
 
-      function mutateParticles(sentence) {
-        const words = sentence.split(' ');
-        const wordIndex = Math.floor(Math.random() * words.length);
-        const targetWord = words[wordIndex];
-        for (const key in particleMap) {
-          if (targetWord.endsWith(key)) {
-            words[wordIndex] = targetWord.slice(0, -key.length) + particleMap[key];
-            return words.join(' ');
-          }
-        }
-        return sentence; // 변경 실패시 원본 반환
-      }
-
-      function mutateEndings(sentence) {
-        for (const key in endingMap) {
-          if (sentence.endsWith(key)) {
-            return sentence.slice(0, -key.length) + endingMap[key];
-          }
-        }
-        return sentence;
-      }
-
-      function mutateTypo(sentence) {
-        const chars = sentence.split('');
-        const index = Math.floor(Math.random() * chars.length);
-        if (typoMap[chars[index]]) {
-          chars[index] = typoMap[chars[index]];
-          return chars.join('');
-        }
-        return sentence;
-      }
-
-      function mutateSpacing(sentence) {
-        const words = sentence.split(' ');
-        if (words.length > 1) {
-          const index = Math.floor(Math.random() * (words.length - 1));
-          // 띄어쓰기 합치기 또는 나누기
-          if (Math.random() > 0.5) {
-             words[index] = words[index] + words[index+1];
-             words.splice(index+1, 1);
-          } else {
-            const word = words[index];
-            if(word.length > 2) {
-              const splitPoint = Math.floor(Math.random() * (word.length - 1)) + 1;
-              words.splice(index, 1, word.slice(0, splitPoint), word.slice(splitPoint));
-            }
-          }
-          return words.join(' ');
-        }
-        return sentence;
-      }
-
-      function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-      }
+      function mutateParticles(s) { const w = s.split(' '), i = Math.floor(Math.random() * w.length); for (const k in particleMap) { if (w[i].endsWith(k)) { w[i] = w[i].slice(0, -k.length) + particleMap[k]; return w.join(' '); } } return s; }
+      function mutateEndings(s) { for (const k in endingMap) { if (s.endsWith(k)) { return s.slice(0, -k.length) + endingMap[k]; } } return s; }
+      function mutateTypo(s) { const c = s.split(''), i = Math.floor(Math.random() * c.length); if (typoMap[c[i]]) { c[i] = typoMap[c[i]]; return c.join(''); } return s; }
+      function mutateSpacing(s) { const w = s.split(' '); if (w.length < 2) return s; const i = Math.floor(Math.random() * (w.length - 1)); if (Math.random() > 0.5) { w[i] += w[i+1]; w.splice(i+1, 1); } else { const wd = w[i]; if(wd.length > 2) { const sp = Math.floor(Math.random()*(wd.length-1))+1; w.splice(i, 1, wd.slice(0, sp), wd.slice(sp)); } } return w.join(' '); }
+      function shuffleArray(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
       // --- 이벤트 리스너 ---
+      playerContainer.addEventListener('click', e => {
+        if (!e.target.matches('.player-btn')) return;
+        currentPlayer = e.target.dataset.player;
+        document.querySelectorAll('.player-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        checkCanStart();
+      });
+      levelContainer.addEventListener('click', e => {
+        if (!e.target.matches('.level-btn')) return;
+        selectedLevel = e.target.dataset.level;
+        document.querySelectorAll('.level-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        checkCanStart();
+      });
       startBtn.addEventListener('click', startQuiz);
       restartBtn.addEventListener('click', () => showScreen('start'));
 
-      // --- 초기화 ---
       document.addEventListener('DOMContentLoaded', fetchQuestions);
-
     </script>
   </body>
 </html>

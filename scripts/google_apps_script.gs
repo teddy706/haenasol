@@ -5,6 +5,7 @@ const SHEET_GUGUDAN_SUMMARY = 'GUGUDAN_SUMMARY';
 const SHEET_GUGUDAN_QUESTIONS = 'GUGUDAN_QUESTIONS';
 const SHEET_ARITHMETIC_SUMMARY = 'ARITHMETIC_SUMMARY';
 const SHEET_ARITHMETIC_QUESTIONS = 'ARITHMETIC_QUESTIONS';
+const SHEET_SPELLING_SUMMARY = 'SPELLING_SUMMARY';
 const SHEET_DASHBOARD = 'DASHBOARD';
 
 function getOrCreateSheet_(name, headers) {
@@ -23,12 +24,14 @@ function setup() {
   const guguQuestionHeaders = ['Timestamp','SessionId','Player','Mode','Dan','A','B','QuestionText','AnswerText','User','CorrectAns','Correct','StreakAfter','BestStreak','TimeMs','UserAgent'];
   const arithSummaryHeaders = ['Timestamp','SessionId','Player','Mode','Total','Correct','BestStreak','StartedAt','FinishedAt','DurationMs','UserAgent','DetailsJSON'];
   const arithQuestionHeaders = ['Timestamp','SessionId','Player','Mode','A','B','Operator','QuestionText','AnswerText','User','CorrectAns','Correct','StreakAfter','BestStreak','TimeMs','UserAgent'];
+  const spellingSummaryHeaders = ['Timestamp','SessionId','Player','Level','Total','Correct','StartedAt','FinishedAt','DurationMs','UserAgent','DetailsJSON'];
   const dashHeaders = ['DASHBOARD'];
 
   getOrCreateSheet_(SHEET_GUGUDAN_SUMMARY, guguSummaryHeaders);
   getOrCreateSheet_(SHEET_GUGUDAN_QUESTIONS, guguQuestionHeaders);
   getOrCreateSheet_(SHEET_ARITHMETIC_SUMMARY, arithSummaryHeaders);
   getOrCreateSheet_(SHEET_ARITHMETIC_QUESTIONS, arithQuestionHeaders);
+  getOrCreateSheet_(SHEET_SPELLING_SUMMARY, spellingSummaryHeaders);
   const dash = getOrCreateSheet_(SHEET_DASHBOARD, dashHeaders);
   dash.setFrozenRows(1);
 }
@@ -67,6 +70,12 @@ function doPost(e) {
       const sh = ss.getSheetByName(SHEET_ARITHMETIC_SUMMARY);
       sh.appendRow([
         now, sessionId, data.player || '', data.mode || '', data.total, data.correct, data.bestStreak,
+        data.startedAt, data.finishedAt, data.durationMs, data.userAgent || '', JSON.stringify(data.details || [])
+      ]);
+    } else if (data.type === 'spelling') {
+      const sh = ss.getSheetByName(SHEET_SPELLING_SUMMARY);
+      sh.appendRow([
+        now, sessionId, data.player || '', data.level || '', data.total, data.correct,
         data.startedAt, data.finishedAt, data.durationMs, data.userAgent || '', JSON.stringify(data.details || [])
       ]);
     }
