@@ -208,6 +208,12 @@
       async function fetchQuestions() {
         try {
           const response = await fetch(WEB_APP_URL);
+          if (!response.ok) {
+              const rawText = await response.text();
+              handleError(`HTTP 오류 ${response.status}: 서버가 올바른 응답을 보내지 않았습니다. 스크립트 배포 설정을 확인하세요. (응답 일부: ${rawText.substring(0, 100)}...)`);
+              return;
+          }
+
           const json = await response.json();
           if (json.ok && Array.isArray(json.data)) {
             if (json.data.length === 0) {
@@ -225,7 +231,9 @@
             const serverError = json.error ? `서버 오류: ${json.error}` : '데이터 형식이 올바르지 않습니다.';
             handleError(serverError);
           }
-        } catch (error) { handleError('데이터를 불러오는 데 실패했습니다. 인터넷 연결을 확인해주세요.'); }
+        } catch (error) { 
+            handleError(`데이터 처리 중 오류가 발생했습니다: ${String(error)}. 인터넷 연결, 스크립트 배포 설정(익명 액세스 허용 등)을 확인해주세요.`);
+        }
       }
 
       function populateLevels() {
