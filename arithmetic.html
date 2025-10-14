@@ -223,6 +223,9 @@
               <button id="skipBtn" class="btn secondary" type="button">건너뛰기</button>
             </div>
             <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+            <div class="btn-wrap" style="margin-top: 16px;">
+                <button id="nextBtn" class="btn" style="display: none;">다음 문제</button>
+            </div>
           </div>
 
           <div id="result" class="result" aria-live="polite">
@@ -303,6 +306,7 @@
         finalStreak: document.getElementById('finalStreak'),
         saveStatus: document.getElementById('saveStatus'),
         retryBtn: document.getElementById('retryBtn'),
+        nextBtn: document.getElementById('nextBtn'),
       };
 
       let state = {
@@ -398,6 +402,7 @@
         els.elapsed.textContent = '0.0s';
         els.streak.textContent = '0';
         els.feedback.textContent = '';
+        els.nextBtn.textContent = '다음 문제';
         hide(els.setup);
         hide(els.result);
         show(els.quiz);
@@ -407,6 +412,13 @@
       }
 
       function nextQuestion(){
+        els.feedback.textContent = '';
+        els.feedback.className = 'feedback';
+        els.nextBtn.style.display = 'none';
+        els.ans.disabled = false;
+        els.submitBtn.disabled = false;
+        els.skipBtn.disabled = false;
+
         if(state.idx >= state.questions.length){
           finish();
           return;
@@ -442,9 +454,19 @@
         els.score.textContent = String(state.correct);
         els.feedback.textContent = correct ? '정답! 잘했어요 ✅' : `아쉬워요 😅 정답은 ${q.answer}`;
         els.feedback.className = 'feedback ' + (correct ? 'good' : 'bad');
+
+        els.ans.disabled = true;
+        els.submitBtn.disabled = true;
+        els.skipBtn.disabled = true;
+        els.nextBtn.style.display = 'inline-flex';
+        els.nextBtn.focus();
+
         state.idx++;
         els.progress.textContent = `${state.idx}/${state.questions.length}`;
-        setTimeout(()=>{ els.feedback.textContent=''; els.feedback.className='feedback'; nextQuestion(); }, 650);
+
+        if (state.idx >= state.questions.length) {
+            els.nextBtn.textContent = '결과 보기 🏆';
+        }
       }
 
       function timerTick(){
@@ -602,6 +624,7 @@
       els.retryBtn.addEventListener('click', ()=>{
         hide(els.result); show(els.setup);
       });
+      els.nextBtn.addEventListener('click', nextQuestion);
 
 
       els.ans.addEventListener('keydown', (e)=>{
