@@ -319,10 +319,10 @@
       function generateIncorrectOptions(correctSentence) {
         const incorrectSentences = new Set();
         const mutators = [mutateSpacing, mutateParticles, mutateEndings, mutateTypo];
+        let attempts = 0;
 
-        while (incorrectSentences.size < 4) {
+        while (incorrectSentences.size < 4 && attempts < 50) {
           let mutated = correctSentence;
-          // 랜덤하게 1~2개의 변형을 적용
           const mutationsToApply = shuffleArray(mutators).slice(0, Math.random() < 0.7 ? 1 : 2);
           for (const mutator of mutationsToApply) {
             mutated = mutator(mutated);
@@ -331,7 +331,26 @@
           if (mutated !== correctSentence) {
             incorrectSentences.add(mutated);
           }
+          attempts++;
         }
+
+        // Fallback to ensure we always have 4 incorrect options
+        const fallbacks = [
+          correctSentence.replace(' ', ''), // remove first space
+          correctSentence + '다.',
+          correctSentence.slice(0, -1),
+          correctSentence.split('').reverse().join('') // reverse it
+        ];
+
+        let fallbackIndex = 0;
+        while (incorrectSentences.size < 4 && fallbackIndex < fallbacks.length) {
+            const fallback = fallbacks[fallbackIndex];
+            if (fallback !== correctSentence) {
+                incorrectSentences.add(fallback);
+            }
+            fallbackIndex++;
+        }
+
         return Array.from(incorrectSentences);
       }
 
