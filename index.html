@@ -186,10 +186,10 @@
                 <span class="emoji" aria-hidden="true">🎮</span>
                 시작하기
               </a>
-              <a class="btn secondary" href="#" aria-label="구구단 연습 방법 보기">
+              <button class="btn secondary" data-tip="gugudan" aria-label="구구단 연습 방법 보기">
                 <span class="emoji" aria-hidden="true">📖</span>
                 연습방법
-              </a>
+              </button>
             </div>
           </article>
 
@@ -202,10 +202,10 @@
                 <span class="emoji" aria-hidden="true">🧠</span>
                 시작하기
               </a>
-              <a class="btn secondary" href="#" aria-label="계산 연습 팁 보기">
+              <button class="btn secondary" data-tip="arithmetic" aria-label="계산 연습 팁 보기">
                 <span class="emoji" aria-hidden="true">💡</span>
                 연습팁
-              </a>
+              </button>
             </div>
           </article>
         </section>
@@ -215,5 +215,34 @@
         즐거운 공부가 최고의 비밀! 오늘도 화이팅 ✨
       </footer>
     </div>
+
+    <div id="tip-gugudan" style="display: none;">
+      <h4>구구단 연습 방법</h4>
+      <p>1. <strong>노래로 외우기:</strong> 신나는 구구단 노래를 따라 부르며 자연스럽게 외워요.</p>
+      <p>2. <strong>순서대로 외우기:</strong> 2단부터 9단까지 순서대로 차근차근 외워봐요.</p>
+      <p>3. <strong>거꾸로 외우기:</strong> 9단부터 2단까지 거꾸로 외우면 실력이 쑥쑥 늘어요.</p>
+      <p>4. <strong>퀴즈 풀기:</strong> 게임 페이지에서 퀴즈를 풀며 실력을 확인해보세요!</p>
+    </div>
+
+    <div id="tip-arithmetic" style="display: none;">
+      <h4>덧셈/뺄셈 연습 팁</h4>
+      <p>1. <strong>손가락 이용하기:</strong> 처음에는 손가락을 사용해서 하나씩 세어보는게 좋아요.</p>
+      <p>2. <strong>작은 수부터:</strong> 1, 2, 3처럼 작은 수부터 더하고 빼는 연습을 해요.</p>
+      <p>3. <strong>10 만들기:</strong> 두 수를 더해서 10이 되는 조합을 미리 외워두면 정말 편해요! (예: 1+9, 2+8)</p>
+      <p>4. <strong>매일 꾸준히:</strong> 하루에 10분이라도 매일 꾸준히 연습하는게 가장 중요해요.</p>
+    </div>
+
+    <script>
+      const tipButtons = document.querySelectorAll('button[data-tip]');
+      tipButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const tipId = button.getAttribute('data-tip');
+          const tipElement = document.getElementById(`tip-${tipId}`);
+          if (tipElement) {
+            alert(tipElement.innerText);
+          }
+        });
+      });
+    </script>
   </body>
   </html>
