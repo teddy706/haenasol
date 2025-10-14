@@ -238,7 +238,7 @@
 
         options.forEach(optionText => {
           const button = document.createElement('button');
-          button.textContent = optionText;
+          button.textContent = optionText.replace(/ /g, '␣');
           button.classList.add('option-btn');
           button.addEventListener('click', () => selectAnswer(optionText, correctSentence));
           optionsContainer.appendChild(button);
