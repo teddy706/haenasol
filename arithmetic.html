@@ -108,6 +108,22 @@
         box-shadow: 0 6px 14px rgba(123, 182, 255, 0.35);
       }
 
+      .level-selector { display: flex; gap: 10px; flex-wrap: wrap; }
+      .level-btn {
+        background: #fff8e1;
+        color: #6d4c41;
+        box-shadow: none;
+        border: 2px solid transparent;
+        opacity: 0.7;
+      }
+      .level-btn.active {
+        background: var(--accent);
+        color: #fff;
+        opacity: 1;
+        border-color: #d9a43b;
+        box-shadow: 0 6px 14px rgba(255, 211, 110, 0.4);
+      }
+
       .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(123, 182, 255, 0.35); background: var(--primary); color: #fff; }
       .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
       .btn.secondary { background: #fdeef7; color: #7d2a56; box-shadow: 0 6px 14px rgba(255, 122, 200, 0.25); }
@@ -172,11 +188,18 @@
               </div>
             </div>
             <div class="row">
+              <label>난이도</label>
+              <div id="level-selector" class="level-selector">
+                <button class="btn level-btn active" data-level="2-1">2학년 1학기</button>
+                <button class="btn level-btn" data-level="2-2">2학년 2학기</button>
+                <button class="btn level-btn" data-level="3-1">3학년 1학기</button>
+              </div>
+            </div>
+            <div class="row">
               <button id="startBtn" class="btn"><span aria-hidden="true">🎮</span> 시작하기</button>
               <button id="resetBtn" class="btn ghost" type="button"><span aria-hidden="true">🧹</span> 초기화</button>
             </div>
             <div class="meta">
-              <span class="badge"><span aria-hidden>✨</span> 100문제</span>
               <span class="badge"><span aria-hidden>💡</span> 엔터키로 제출</span>
             </div>
           </div>
@@ -261,6 +284,7 @@
         result: document.getElementById('result'),
         playerSelector: document.getElementById('player-selector'),
         modeSelector: document.getElementById('mode-selector'),
+        levelSelector: document.getElementById('level-selector'),
         startBtn: document.getElementById('startBtn'),
         resetBtn: document.getElementById('resetBtn'),
         qA: document.getElementById('qA'),
@@ -284,6 +308,7 @@
       let state = {
         player: '해나',
         mode: 'mixed',
+        level: '2-1',
         questions: [], // {a, b, op, answer}
         idx: 0,
         correct: 0,
@@ -294,10 +319,9 @@
         details: []
       };
 
-      function buildQuestions(mode){
+      function buildQuestions(mode, level){
         const questions = [];
-        const numQuestions = 100;
-        const maxNum = 20;
+        const numQuestions = 20;
 
         const ops = [];
         if (mode === 'add') {
@@ -305,22 +329,49 @@
         } else if (mode === 'subtract') {
           for(let i=0; i<numQuestions; i++) ops.push('-');
         } else { // mixed
-          for(let i=0; i<numQuestions / 2; i++) ops.push('+');
-          for(let i=0; i<numQuestions / 2; i++) ops.push('-');
+          const numAdd = Math.ceil(numQuestions / 2);
+          for(let i=0; i<numAdd; i++) ops.push('+');
+          for(let i=0; i<numQuestions - numAdd; i++) ops.push('-');
         }
         shuffle(ops);
 
         for(const op of ops) {
           let a, b, answer;
-          if (op === '+') {
-            a = Math.floor(Math.random() * (maxNum + 1));
-            b = Math.floor(Math.random() * (maxNum + 1));
-            answer = a + b;
-          } else { // '-'
-            a = Math.floor(Math.random() * (maxNum + 1));
-            b = Math.floor(Math.random() * (a + 1)); // b <= a to avoid negative result
-            answer = a - b;
+
+          if (level === '2-1') {
+            if (op === '+') { // 2-1, 덧셈 (받아올림 없음)
+              const d1_a = Math.floor(Math.random() * 8) + 1; // 1-8
+              const d1_b = Math.floor(Math.random() * (9 - d1_a)) + 1; // 1-(9-d1_a)
+              const d10_a = Math.floor(Math.random() * 8) + 1; // 1-8
+              const d10_b = Math.floor(Math.random() * (8 - d10_a)) + 1; // 1-(8-d10_a)
+              a = d10_a * 10 + d1_a;
+              b = d10_b * 10 + d1_b;
+            } else { // 2-1, 뺄셈 (받아내림 없음)
+              const d1_a = Math.floor(Math.random() * 8) + 2; // 2-9
+              const d1_b = Math.floor(Math.random() * (d1_a - 1)) + 1; // 1-(d1_a-1)
+              const d10_a = Math.floor(Math.random() * 8) + 2; // 2-9
+              const d10_b = Math.floor(Math.random() * (d10_a - 1)) + 1; // 1-(d10_a-1)
+              a = d10_a * 10 + d1_a;
+              b = d10_b * 10 + d1_b;
+            }
+          } else if (level === '3-1') {
+            if (op === '+') { // 3-1, 덧셈
+              a = Math.floor(Math.random() * 900) + 100; // 100-999
+              b = Math.floor(Math.random() * (1000 - a)) + 1;
+            } else { // 3-1, 뺄셈
+              a = Math.floor(Math.random() * 900) + 100; // 100-999
+              b = Math.floor(Math.random() * (a - 100)) + 100; // 100-(a-1)
+            }
+          } else { // 2-2 (default)
+            if (op === '+') {
+              a = Math.floor(Math.random() * 90) + 10; // 10..99
+              b = Math.floor(Math.random() * (100 - a)) + 1; // 1..(100-a)
+            } else {
+              a = Math.floor(Math.random() * 81) + 20; // 20..100
+              b = Math.floor(Math.random() * (a - 10)) + 10; // 10..(a-1)
+            }
           }
+          answer = (op === '+') ? a + b : a - b;
           questions.push({ a, b, op, answer });
         }
         return questions;
@@ -334,7 +385,8 @@
       function start(){
         state.player = els.playerSelector.querySelector('.active').dataset.player || '해나';
         state.mode = els.modeSelector.querySelector('.active').dataset.mode || 'mixed';
-        state.questions = buildQuestions(state.mode);
+        state.level = els.levelSelector.querySelector('.active').dataset.level || '2-1';
+        state.questions = buildQuestions(state.mode, state.level);
         state.idx = 0;
         state.correct = 0;
         state.details = [];
@@ -515,6 +567,27 @@
         }
       });
 
+      const updateLevelButtons = (activeBtn) => {
+        els.levelSelector.querySelectorAll('.level-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.textContent = btn.dataset.text;
+        });
+        activeBtn.classList.add('active');
+        activeBtn.textContent = '✅ ' + activeBtn.dataset.text;
+        state.level = activeBtn.dataset.level;
+      };
+
+      els.levelSelector.querySelectorAll('.level-btn').forEach(btn => {
+        btn.dataset.text = btn.textContent;
+      });
+
+      els.levelSelector.addEventListener('click', (e) => {
+        const clickedBtn = e.target.closest('.level-btn');
+        if (clickedBtn) {
+          updateLevelButtons(clickedBtn);
+        }
+      });
+
       els.startBtn.addEventListener('click', start);
       els.resetBtn.addEventListener('click', ()=>{
         hide(els.quiz);
@@ -522,6 +595,7 @@
         show(els.setup);
         updatePlayerButtons(els.playerSelector.querySelector('[data-player="해나"]'));
         updateModeButtons(els.modeSelector.querySelector('[data-mode="mixed"]'));
+        updateLevelButtons(els.levelSelector.querySelector('[data-level="2-1"]'));
       });
       els.submitBtn.addEventListener('click', ()=> submit(false));
       els.skipBtn.addEventListener('click', ()=> submit(true));
@@ -537,6 +611,7 @@
       // 초기 상태 설정
       updatePlayerButtons(els.playerSelector.querySelector('.player-btn.active'));
       updateModeButtons(els.modeSelector.querySelector('.mode-btn.active'));
+      updateLevelButtons(els.levelSelector.querySelector('.level-btn.active'));
 
 
     </script>
