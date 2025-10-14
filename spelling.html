@@ -287,8 +287,7 @@
       async function saveResult(data) {
         try {
           await fetch(WEB_APP_URL, {
-            method: 'POST', mode: 'no-cors', cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', cache: 'no-cache',
             body: JSON.stringify(data)
           });
         } catch (error) { console.error('Error saving result:', error); }
