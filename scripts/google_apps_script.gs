@@ -124,9 +124,12 @@ function doGet(e) {
     const ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1S3Q1Aa6LJt7zp-0PfIErR9hGLlbhbqkgofg6oQTIvfo/edit?usp=sharing");
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
-      throw new Error(`Sheet "${sheetName}" not found.`);
+      throw new Error(`시트("${sheetName}")를 찾을 수 없습니다. 시트 이름이 올바른지 확인하세요.`);
     }
     const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      throw new Error(`시트("${sheetName}")가 비어있거나 헤더만 있습니다. 문제 데이터가 있는지 확인하세요.`);
+    }
     const headers = data.shift(); // Get headers
     const json = data.map(row => {
       const obj = {};
