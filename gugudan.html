@@ -479,11 +479,24 @@
         }
       });
 
+      const updateModeButtons = (activeBtn) => {
+        els.modeSelector.querySelectorAll('.mode-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.textContent = btn.dataset.text;
+        });
+        activeBtn.classList.add('active');
+        activeBtn.textContent = '✅ ' + activeBtn.dataset.text;
+        state.mode = activeBtn.dataset.mode;
+      };
+
+      els.modeSelector.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.dataset.text = btn.textContent;
+      });
+
       els.modeSelector.addEventListener('click', (e) => {
-        if (e.target.classList.contains('mode-btn')) {
-          els.modeSelector.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-          e.target.classList.add('active');
-          state.mode = e.target.dataset.mode;
+        const clickedBtn = e.target.closest('.mode-btn');
+        if (clickedBtn) {
+          updateModeButtons(clickedBtn);
         }
       });
 
@@ -492,10 +505,8 @@
         hide(els.quiz);
         hide(els.result);
         show(els.setup);
-        // '해나' 버튼을 클릭하여 선택 상태를 초기화합니다.
         els.playerSelector.querySelector('[data-player="해나"]').click();
-        // '처음부터' 버튼을 클릭하여 모드를 초기화합니다.
-        els.modeSelector.querySelector('[data-mode="sequential"]').click();
+        updateModeButtons(els.modeSelector.querySelector('[data-mode="sequential"]'));
       });
       els.submitBtn.addEventListener('click', ()=> submit(false));
       els.skipBtn.addEventListener('click', ()=> submit(true));
@@ -507,6 +518,9 @@
       els.ans.addEventListener('keydown', (e)=>{
         if(e.key === 'Enter') submit(false);
       });
+
+      // 초기 상태 설정
+      updateModeButtons(els.modeSelector.querySelector('.mode-btn.active'));
 
       // 페이지 로드시 오프라인 큐 전송 시도
       window.addEventListener('load', ()=>{
