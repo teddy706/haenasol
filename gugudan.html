@@ -76,6 +76,11 @@
         min-width: 120px;
       }
 
+      .player-selector { display: flex; gap: 10px; }
+      .player-btn { background: #eef5ff; color: #2a4a7e; box-shadow: none; }
+      .player-btn.active { background: var(--primary); color: #fff; box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35); }
+
+
       .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35); background: var(--primary); color: #fff; }
       .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
       .btn.secondary { background: #eef5ff; color: #2a4a7e; box-shadow: 0 6px 14px rgba(123,182,255,.25); }
@@ -133,11 +138,11 @@
         <section class="card" aria-label="구구단 설정 및 게임">
           <div id="setup">
             <div class="row">
-              <label for="player">이름</label>
-              <select id="player" aria-label="이름 선택">
-                <option value="해나">해나</option>
-                <option value="해솔">해솔</option>
-              </select>
+              <label>이름</label>
+              <div id="player-selector" class="player-selector">
+                <button class="btn player-btn active" data-player="해나">해나</button>
+                <button class="btn player-btn" data-player="해솔">해솔</button>
+              </div>
             </div>
             <div class="row">
               <label for="dan">단 선택</label>
@@ -252,7 +257,7 @@
         setup: document.getElementById('setup'),
         quiz: document.getElementById('quiz'),
         result: document.getElementById('result'),
-        player: document.getElementById('player'),
+        playerSelector: document.getElementById('player-selector'),
         dan: document.getElementById('dan'),
         mode: document.getElementById('mode'),
         startBtn: document.getElementById('startBtn'),
@@ -275,7 +280,7 @@
       };
 
       let state = {
-        player: '',
+        player: '해나',
         dan: 2,
         mode: 'sequential',
         questions: [], // {a,b,answer}
@@ -303,7 +308,7 @@
       function hide(el){ el.classList.remove('active'); }
 
       function start(){
-        state.player = (els.player.value || '').trim();
+        state.player = els.playerSelector.querySelector('.active').dataset.player || '해나';
         state.dan = parseInt(els.dan.value,10);
         state.mode = els.mode.value;
         state.questions = buildQuestions(state.dan, state.mode);
@@ -449,9 +454,18 @@
       }
 
       // 이벤트 바인딩
+      els.playerSelector.addEventListener('click', (e) => {
+        if (e.target.classList.contains('player-btn')) {
+          els.playerSelector.querySelectorAll('.player-btn').forEach(btn => btn.classList.remove('active'));
+          e.target.classList.add('active');
+          state.player = e.target.dataset.player;
+        }
+      });
       els.startBtn.addEventListener('click', start);
       els.resetBtn.addEventListener('click', ()=>{
-        els.player.value = '해나';
+        els.playerSelector.querySelector('[data-player="해나"]').classList.add('active');
+        els.playerSelector.querySelector('[data-player="해솔"]').classList.remove('active');
+        state.player = '해나';
         els.dan.value = '2';
         els.mode.value = 'sequential';
       });
@@ -461,6 +475,8 @@
         hide(els.result); show(els.quiz); // 재사용 흐름 간단화
         start();
       });
+
+
       els.ans.addEventListener('keydown', (e)=>{
         if(e.key === 'Enter') submit(false);
       });
