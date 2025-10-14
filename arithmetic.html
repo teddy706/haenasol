@@ -246,13 +246,9 @@
             if(r && r.ok) {
               okCount++;
             } else {
-              const errorText = await r.text();
-              throw new Error(`서버 응답 오류: ${errorText}`);
+              throw new Error('No OK');
             }
-          } catch(e){
-            alert(`저장 실패! 다음 오류 메시지를 개발자에게 알려주세요: ${e.message}`);
-            rest.push(item);
-          }
+          } catch(e){ rest.push(item); }
         }
         saveQueue(rest);
         return okCount;

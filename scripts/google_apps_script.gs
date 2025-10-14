@@ -60,7 +60,7 @@ function doPost(e) {
       const sh = ss.getSheetByName(SHEET_ARITHMETIC_QUESTIONS);
       sh.appendRow([
         now, sessionId, data.player || '', data.mode || '', 
-        q.a, q.b, q.op, `${q.a}${q.op}${q.b}`, q.correctAns, q.user, q.correctAns, q.correct ? 1 : 0,
+        q.a, q.b, "'" + q.op, `${q.a}${q.op}${q.b}`, q.correctAns, q.user, q.correctAns, q.correct ? 1 : 0,
         q.streakAfter, data.bestStreak, q.timeMs, data.userAgent || ''
       ]);
     } else if (data.type === 'arithmetic') {
