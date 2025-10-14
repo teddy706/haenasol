@@ -415,7 +415,7 @@
           type: 'gugudan',
           player: state.player || null,
           mode: state.mode,
-          dan: 'all',
+          dan: null, // 'all' 대신 null을 전송하여 Apps Script 오류 방지
           total: state.questions.length,
           correct: state.correct,
           bestStreak: state.bestStreak,
