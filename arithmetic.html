@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>덧셈/뺄셈 게임 — 해나와 해솔이</title>
+    <meta name="description" content="덧셈, 뺄셈 연습 게임" />
+    <!-- 하드코딩된 저장 엔드포인트(선택): 아래 content에 웹 앱 URL을 넣으면 즉시 적용됩니다. -->
+    <meta name="endpoint" content="https://script.google.com/macros/s/AKfycbyaOdZKn6mZKIZnnRtxhZ6QRQcbmmqc7YPv9vlqnCafFfGfPwfwJ3kXAMAJjy6RhoIRUw/exec" />
+    <style>
+      :root {
+        --bg: #f7faff;
+        --bg-accent: radial-gradient(1200px 600px at 10% -10%, #e8f7ff 0%, transparent 60%),
+                      radial-gradient(1000px 500px at 110% 0%, #fff3d9 0%, transparent 55%),
+                      radial-gradient(800px 400px at 50% 120%, #ffe6f4 0%, transparent 55%);
+        --card: #ffffff;
+        --text: #3b2a3f;
+        --muted: #6b5c72;
+        --primary: #7bb6ff;
+        --primary-dark: #5c9de0;
+        --secondary: #ff7ac8;
+        --accent: #ffd36e;
+        --shadow: 0 8px 28px rgba(31, 59, 81, 0.12);
+        --radius-lg: 20px;
+        --radius-sm: 12px;
+        --good: #1ea672;
+        --bad: #e25a5a;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        background-image: var(--bg-accent);
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .wrap {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      header { padding: 18px 16px 8px; text-align: center; }
+      .title { margin: 0; font-size: clamp(24px, 4.2vw, 40px); text-shadow: 0 2px 0 #fff, 0 6px 18px rgba(123, 182, 255, 0.25); }
+      .title .spark { color: var(--primary); }
+      .title .sky { color: var(--secondary); }
+      .subtitle { margin: 6px 0 0; color: var(--muted); font-size: clamp(13px, 2vw, 16px); }
+
+      main { padding: 16px; display: grid; place-items: center; }
+
+      .card {
+        width: min(720px, 92vw);
+        background: var(--card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: clamp(16px, 3vw, 26px);
+      }
+
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+      .row + .row { margin-top: 12px; }
+
+      label { font-weight: 700; color: #5a4966; }
+
+      select, input[type="text"], input[type="number"] {
+        appearance: none;
+        border: 2px solid #e1eef5;
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 16px;
+        min-width: 120px;
+      }
+
+      .player-selector { display: flex; gap: 10px; }
+      .player-btn {
+        background: #eef5ff;
+        color: #2a4a7e;
+        box-shadow: none;
+        border: 2px solid transparent;
+        opacity: 0.7;
+      }
+      .player-btn.active {
+        background: var(--secondary);
+        color: #fff;
+        opacity: 1;
+        border-color: var(--primary-dark);
+        box-shadow: 0 6px 14px rgba(224, 86, 169, 0.35);
+      }
+
+      .mode-selector { display: flex; gap: 10px; flex-wrap: wrap; }
+      .mode-btn {
+        background: #eef5ff;
+        color: #2a4a7e;
+        box-shadow: none;
+        border: 2px solid transparent;
+        opacity: 0.7;
+      }
+      .mode-btn.active {
+        background: var(--primary);
+        color: #fff;
+        opacity: 1;
+        border-color: #5592db;
+        box-shadow: 0 6px 14px rgba(123, 182, 255, 0.35);
+      }
+
+      .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: var(--radius-sm); padding: 12px 16px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(123, 182, 255, 0.35); background: var(--primary); color: #fff; }
+      .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+      .btn.secondary { background: #fdeef7; color: #7d2a56; box-shadow: 0 6px 14px rgba(255, 122, 200, 0.25); }
+      .btn.ghost { background: transparent; box-shadow: none; border: 2px dashed #d0e5ff; color: #526a7d; }
+
+      .meta { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 14px; margin-top: 8px; }
+      .badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(90deg, #e9f3ff, #ffe3f2); color: #3c566a; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+
+      .quiz { display: none; margin-top: 8px; }
+      .quiz.active { display: block; }
+
+      .question { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin: 10px 0 6px; }
+      .qtext { text-align: right; font-size: clamp(28px, 6vw, 48px); font-weight: 900; }
+      .operator { text-align: center; font-size: clamp(24px, 5vw, 36px); color: #6a728a; }
+      .btext { text-align: left; font-size: clamp(28px, 6vw, 48px); font-weight: 900; }
+
+      .answer { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 8px; }
+      .answer input { width: 140px; text-align: center; font-size: 22px; border-radius: 12px; border: 2px solid #e1eef5; padding: 10px 12px; }
+
+      .status { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; color: var(--muted); font-size: 14px; }
+      .feedback { margin-top: 10px; font-weight: 900; text-align: center; font-size: 18px; }
+      .good { color: var(--good); }
+      .bad { color: var(--bad); }
+
+      .result { display: none; margin-top: 8px; text-align: center; }
+      .result.active { display: block; }
+      .score { font-size: clamp(22px, 4.5vw, 36px); font-weight: 900; margin: 6px 0 10px; }
+      .small { color: var(--muted); font-size: 13px; }
+      .saveStatus { margin-top: 8px; font-size: 14px; }
+
+      footer { text-align: center; padding: 20px 16px 28px; color: var(--muted); font-size: 13px; }
+      .topnav { display: flex; justify-content: center; gap: 10px; margin: 8px 0 4px; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+      .btn:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #cce6ff; outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1 class="title">덧셈/뺄셈 <span class="spark">게임</span> <span class="sky">➕➖</span></h1>
+        <p class="subtitle">덧셈, 뺄셈 문제를 풀면서 점수를 모아봐요!</p>
+        <div class="topnav">
+          <a class="btn secondary" href="index.html">← 메인으로</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="card" aria-label="덧셈/뺄셈 설정 및 게임">
+          <div id="setup">
+            <div class="row">
+              <label>이름</label>
+              <div id="player-selector" class="player-selector">
+                <button class="btn player-btn active" data-player="해나">해나</button>
+                <button class="btn player-btn" data-player="해솔">해솔</button>
+              </div>
+            </div>
+            <div class="row">
+              <label>문제 종류</label>
+              <div id="mode-selector" class="mode-selector">
+                <button class="btn mode-btn active" data-mode="mixed">섞어서</button>
+                <button class="btn mode-btn" data-mode="add">덧셈만</button>
+                <button class="btn mode-btn" data-mode="subtract">뺄셈만</button>
+              </div>
+            </div>
+            <div class="row">
+              <button id="startBtn" class="btn"><span aria-hidden="true">🎮</span> 시작하기</button>
+              <button id="resetBtn" class="btn ghost" type="button"><span aria-hidden="true">🧹</span> 초기화</button>
+            </div>
+            <div class="meta">
+              <span class="badge"><span aria-hidden>✨</span> 20문제</span>
+              <span class="badge"><span aria-hidden>💡</span> 엔터키로 제출</span>
+            </div>
+          </div>
+
+          <div id="quiz" class="quiz" aria-live="polite">
+            <div class="status">
+              <div>진행: <span id="progress">0/20</span></div>
+              <div>점수: <span id="score">0</span></div>
+              <div>연속 정답: <span id="streak">0</span></div>
+              <div>시간: <span id="elapsed">0.0s</span></div>
+            </div>
+            <div class="question" aria-label="문제">
+              <div class="qtext" id="qA">10</div>
+              <div class="operator" id="qOp">+</div>
+              <div class="btext" id="qB">5</div>
+            </div>
+            <div class="answer">
+              <label class="sr-only" for="ans">정답 입력</label>
+              <input id="ans" type="number" inputmode="numeric" placeholder="정답" />
+              <button id="submitBtn" class="btn" type="button">정답!</button>
+              <button id="skipBtn" class="btn secondary" type="button">건너뛰기</button>
+            </div>
+            <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+          </div>
+
+          <div id="result" class="result" aria-live="polite">
+            <div class="score" id="finalScore">0 / 20 점</div>
+            <div class="small" id="finalTime">총 시간: ${(durationMs/1000).toFixed(1)}초</div>
+            <div class="small" id="finalStreak">최고 연속 정답: 0개</div>
+            <div class="saveStatus" id="saveStatus">기록 저장 준비 완료</div>
+            <div style="margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <button id="retryBtn" class="btn" type="button">다시 하기</button>
+              <a class="btn secondary" href="index.html">메인으로</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>즐겁게 연습하면 실력이 쑥쑥! ✨</footer>
+    </div>
+
+    <script>
+      const EP_LS_KEY = 'arithmetic_endpoint';
+      const getEndpoint = () => {
+        const metaTag = document.querySelector('meta[name="endpoint"]');
+        const metaEP = (metaTag?.content || '').trim();
+        const winEP = (typeof window !== 'undefined' && window.ENDPOINT_URL ? String(window.ENDPOINT_URL) : '').trim();
+        const lsEP = (localStorage.getItem(EP_LS_KEY) || '').trim();
+        return metaEP || winEP || lsEP;
+      };
+      const setEndpoint = (url) => { if(typeof url === 'string') localStorage.setItem(EP_LS_KEY, url.trim()); };
+
+      const LS_KEY = "arithmetic_offline_queue";
+      function loadQueue(){ try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; } }
+      function saveQueue(arr){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
+      async function flushQueue(){
+        const ENDPOINT_URL = getEndpoint();
+        if(!ENDPOINT_URL) return 0;
+        const q = loadQueue();
+        if(q.length === 0) return;
+        let okCount = 0;
+        const rest = [];
+        for(const item of q){
+          try {
+            const r = await fetch(ENDPOINT_URL, { method: "POST", body: JSON.stringify(item), keepalive: true });
+            if(r && 'ok' in r && r.ok) {
+              okCount++;
+            } else {
+              throw new Error('No OK');
+            }
+          } catch(e){ rest.push(item); }
+        }
+        saveQueue(rest);
+        return okCount;
+      }
+
+      const els = {
+        setup: document.getElementById('setup'),
+        quiz: document.getElementById('quiz'),
+        result: document.getElementById('result'),
+        playerSelector: document.getElementById('player-selector'),
+        modeSelector: document.getElementById('mode-selector'),
+        startBtn: document.getElementById('startBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        qA: document.getElementById('qA'),
+        qOp: document.getElementById('qOp'),
+        qB: document.getElementById('qB'),
+        ans: document.getElementById('ans'),
+        submitBtn: document.getElementById('submitBtn'),
+        skipBtn: document.getElementById('skipBtn'),
+        progress: document.getElementById('progress'),
+        score: document.getElementById('score'),
+        elapsed: document.getElementById('elapsed'),
+        streak: document.getElementById('streak'),
+        feedback: document.getElementById('feedback'),
+        finalScore: document.getElementById('finalScore'),
+        finalTime: document.getElementById('finalTime'),
+        finalStreak: document.getElementById('finalStreak'),
+        saveStatus: document.getElementById('saveStatus'),
+        retryBtn: document.getElementById('retryBtn'),
+      };
+
+      let state = {
+        player: '해나',
+        mode: 'mixed',
+        questions: [], // {a, b, op, answer}
+        idx: 0,
+        correct: 0,
+        startedAt: 0,
+        qStartedAt: 0,
+        streak: 0,
+        bestStreak: 0,
+        details: []
+      };
+
+      function buildQuestions(mode){
+        const questions = [];
+        const numQuestions = 20;
+        const maxNum = 20;
+
+        const ops = [];
+        if (mode === 'add') {
+          for(let i=0; i<numQuestions; i++) ops.push('+');
+        } else if (mode === 'subtract') {
+          for(let i=0; i<numQuestions; i++) ops.push('-');
+        } else { // mixed
+          for(let i=0; i<numQuestions / 2; i++) ops.push('+');
+          for(let i=0; i<numQuestions / 2; i++) ops.push('-');
+        }
+        shuffle(ops);
+
+        for(const op of ops) {
+          let a, b, answer;
+          if (op === '+') {
+            a = Math.floor(Math.random() * (maxNum + 1));
+            b = Math.floor(Math.random() * (maxNum + 1));
+            answer = a + b;
+          } else { // '-'
+            a = Math.floor(Math.random() * (maxNum + 1));
+            b = Math.floor(Math.random() * (a + 1)); // b <= a to avoid negative result
+            answer = a - b;
+          }
+          questions.push({ a, b, op, answer });
+        }
+        return questions;
+      }
+
+      function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+      function fmtSec(ms){ return (ms/1000).toFixed(1)+"s"; }
+      function show(el){ el.classList.add('active'); }
+      function hide(el){ el.classList.remove('active'); }
+
+      function start(){
+        state.player = els.playerSelector.querySelector('.active').dataset.player || '해나';
+        state.mode = els.modeSelector.querySelector('.active').dataset.mode || 'mixed';
+        state.questions = buildQuestions(state.mode);
+        state.idx = 0;
+        state.correct = 0;
+        state.details = [];
+        state.streak = 0;
+        state.bestStreak = 0;
+        state.startedAt = Date.now();
+        els.score.textContent = '0';
+        els.progress.textContent = `0/${state.questions.length}`;
+        els.elapsed.textContent = '0.0s';
+        els.streak.textContent = '0';
+        els.feedback.textContent = '';
+        hide(els.setup);
+        hide(els.result);
+        show(els.quiz);
+        document.getElementById('ans').value = '';
+        nextQuestion();
+        timerTick();
+      }
+
+      function nextQuestion(){
+        if(state.idx >= state.questions.length){
+          finish();
+          return;
+        }
+        const q = state.questions[state.idx];
+        els.qA.textContent = q.a;
+        els.qOp.textContent = q.op;
+        els.qB.textContent = q.b;
+        els.progress.textContent = `${state.idx}/${state.questions.length}`;
+        els.ans.value = '';
+        els.ans.focus();
+        state.qStartedAt = Date.now();
+      }
+
+      function submit(currentSkipped=false){
+        if(state.idx >= state.questions.length) return;
+        const q = state.questions[state.idx];
+        const user = currentSkipped ? NaN : parseInt(els.ans.value,10);
+        const correct = (!Number.isNaN(user) && user === q.answer);
+        if(correct) state.correct++;
+        const timeMs = Date.now() - state.qStartedAt;
+        if(correct){
+          state.streak += 1;
+          if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+        } else {
+          state.streak = 0;
+        }
+        els.streak.textContent = String(state.streak);
+        const streakAfter = state.streak;
+        const detail = { a:q.a, b:q.b, op: q.op, user: Number.isNaN(user)? null : user, correctAns: q.answer, correct, timeMs, streakAfter };
+        state.details.push(detail);
+        saveQuestionRecord(q, Number.isNaN(user)? null : user, correct, timeMs, streakAfter).catch(()=>{});
+        els.score.textContent = String(state.correct);
+        els.feedback.textContent = correct ? '정답! 잘했어요 ✅' : `아쉬워요 😅 정답은 ${q.answer}`;
+        els.feedback.className = 'feedback ' + (correct ? 'good' : 'bad');
+        state.idx++;
+        els.progress.textContent = `${state.idx}/${state.questions.length}`;
+        setTimeout(()=>{ els.feedback.textContent=''; els.feedback.className='feedback'; nextQuestion(); }, 650);
+      }
+
+      function timerTick(){
+        if(!els.quiz.classList.contains('active')) return;
+        const ms = Date.now() - state.startedAt;
+        els.elapsed.textContent = fmtSec(ms);
+        requestAnimationFrame(timerTick);
+      }
+
+      function finish(){
+        hide(els.quiz); show(els.result);
+        const finishedAt = Date.now();
+        const durationMs = finishedAt - state.startedAt;
+        els.finalScore.textContent = `${state.correct} / ${state.questions.length} 점`;
+        els.finalTime.textContent = `총 시간: ${(durationMs/1000).toFixed(1)}초`;
+        els.finalStreak.textContent = `최고 연속 정답: ${state.bestStreak}개`;
+
+        const payload = {
+          type: 'arithmetic',
+          player: state.player || null,
+          mode: state.mode,
+          total: state.questions.length,
+          correct: state.correct,
+          bestStreak: state.bestStreak,
+          startedAt: new Date(state.startedAt).toISOString(),
+          finishedAt: new Date(finishedAt).toISOString(),
+          durationMs,
+          details: state.details,
+          userAgent: navigator.userAgent
+        };
+        saveRecord(payload).catch(()=>{});
+      }
+
+      async function saveRecord(payload){
+        const q = loadQueue(); q.push(payload); saveQueue(q);
+        els.saveStatus.textContent = '기록 저장 중…';
+        const ENDPOINT_URL = getEndpoint();
+        if(!ENDPOINT_URL){
+          els.saveStatus.textContent = '엔드포인트 미설정: 오프라인에 저장됨';
+          return;
+        }
+        try {
+          const okCount = await flushQueue();
+          if(okCount && okCount > 0){
+            els.saveStatus.textContent = '기록 저장 완료 ✅';
+          } else {
+            try {
+              const sent = navigator.sendBeacon && navigator.sendBeacon(ENDPOINT_URL, new Blob([JSON.stringify(payload)], {type: 'text/plain'}));
+              if(sent){
+                els.saveStatus.textContent = '전송 시도됨(Beacon) — 확인은 불가';
+              } else {
+                els.saveStatus.textContent = '네트워크 오류: 나중에 자동 재시도됨';
+              }
+            } catch {
+              els.saveStatus.textContent = '네트워크 오류: 나중에 자동 재시도됨';
+            }
+          }
+        } catch (e){
+          els.saveStatus.textContent = '저장 실패: 오프라인 큐에 보관됨';
+        }
+      }
+
+      async function saveQuestionRecord(q, userValue, isCorrect, timeMs, streakAfter){
+        const payload = {
+          type: 'arithmetic_q',
+          player: state.player || null,
+          mode: state.mode,
+          total: 1,
+          correct: isCorrect ? 1 : 0,
+          startedAt: new Date(state.qStartedAt).toISOString(),
+          finishedAt: new Date().toISOString(),
+          durationMs: timeMs,
+          details: [{ a: q.a, b: q.b, op: q.op, user: userValue, correctAns: q.answer, correct: isCorrect, timeMs, streakAfter }],
+          streakAfter,
+          bestStreak: state.bestStreak,
+          userAgent: navigator.userAgent
+        };
+        return saveRecord(payload);
+      }
+
+      const updatePlayerButtons = (activeBtn) => {
+        els.playerSelector.querySelectorAll('.player-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.textContent = btn.dataset.text;
+        });
+        activeBtn.classList.add('active');
+        activeBtn.textContent = '✅ ' + activeBtn.dataset.text;
+        state.player = activeBtn.dataset.player;
+      };
+
+      els.playerSelector.querySelectorAll('.player-btn').forEach(btn => {
+        btn.dataset.text = btn.textContent;
+      });
+
+      els.playerSelector.addEventListener('click', (e) => {
+        const clickedBtn = e.target.closest('.player-btn');
+        if (clickedBtn) {
+          updatePlayerButtons(clickedBtn);
+        }
+      });
+
+      const updateModeButtons = (activeBtn) => {
+        els.modeSelector.querySelectorAll('.mode-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.textContent = btn.dataset.text;
+        });
+        activeBtn.classList.add('active');
+        activeBtn.textContent = '✅ ' + activeBtn.dataset.text;
+        state.mode = activeBtn.dataset.mode;
+      };
+
+      els.modeSelector.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.dataset.text = btn.textContent;
+      });
+
+      els.modeSelector.addEventListener('click', (e) => {
+        const clickedBtn = e.target.closest('.mode-btn');
+        if (clickedBtn) {
+          updateModeButtons(clickedBtn);
+        }
+      });
+
+      els.startBtn.addEventListener('click', start);
+      els.resetBtn.addEventListener('click', ()=>{
+        hide(els.quiz);
+        hide(els.result);
+        show(els.setup);
+        updatePlayerButtons(els.playerSelector.querySelector('[data-player="해나"]'));
+        updateModeButtons(els.modeSelector.querySelector('[data-mode="mixed"]'));
+      });
+      els.submitBtn.addEventListener('click', ()=> submit(false));
+      els.skipBtn.addEventListener('click', ()=> submit(true));
+      els.retryBtn.addEventListener('click', ()=>{
+        hide(els.result); show(els.setup);
+      });
+
+
+      els.ans.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter') submit(false);
+      });
+
+      // 초기 상태 설정
+      updatePlayerButtons(els.playerSelector.querySelector('.player-btn.active'));
+      updateModeButtons(els.modeSelector.querySelector('.mode-btn.active'));
+
+      // 페이지 로드시 오프라인 큐 전송 시도
+      window.addEventListener('load', ()=>{
+        // 헤더 상단에 설정 버튼 추가
+        const nav = document.querySelector('.topnav');
+        if(nav){
+          const btn = document.createElement('button');
+          btn.className = 'btn secondary';
+          btn.type = 'button';
+          btn.textContent = '💾 기록 저장 설정';
+          btn.addEventListener('click', ()=>{
+            const metaTag = document.querySelector('meta[name="endpoint"]');
+            const hardcoded = (metaTag?.content || '').trim() || (typeof window !== 'undefined' && window.ENDPOINT_URL ? String(window.ENDPOINT_URL).trim() : '');
+            const current = (localStorage.getItem(EP_LS_KEY) || '').trim() || hardcoded;
+            const url = prompt('Google Apps Script 웹앱 URL을 입력하세요', current);
+            if(typeof url === 'string'){
+              setEndpoint(url);
+              if(hardcoded){
+                alert('저장됨! 단, 코드에 하드코딩된 URL이 있어 로컬 설정보다 우선 적용됩니다. 코드의 meta/script 값을 비우면 로컬 설정이 사용돼요.');
+              } else {
+                alert('엔드포인트가 저장되었어요! 페이지를 새로고침하면 적용됩니다.');
+              }
+              flushQueue();
+            }
+          });
+          nav.appendChild(btn);
+        }
+        flushQueue();
+      });
+    </script>
+  </body>
+</html>
+

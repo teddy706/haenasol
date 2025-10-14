@@ -1,8 +1,10 @@
-// Hanasol 구구단 저장/대시보드 스크립트
+// Hanasol 게임 저장/대시보드 스크립트
 // 스프레드시트 편집기에서: 코드 붙여넣기 → setup() 실행 → 웹 앱 배포 → buildDashboard() 실행
 
-const SHEET_SUMMARY = 'GUGUDAN_SUMMARY';
-const SHEET_QUESTIONS = 'GUGUDAN_QUESTIONS';
+const SHEET_GUGUDAN_SUMMARY = 'GUGUDAN_SUMMARY';
+const SHEET_GUGUDAN_QUESTIONS = 'GUGUDAN_QUESTIONS';
+const SHEET_ARITHMETIC_SUMMARY = 'ARITHMETIC_SUMMARY';
+const SHEET_ARITHMETIC_QUESTIONS = 'ARITHMETIC_QUESTIONS';
 const SHEET_DASHBOARD = 'DASHBOARD';
 
 function getOrCreateSheet_(name, headers) {
@@ -17,16 +19,16 @@ function getOrCreateSheet_(name, headers) {
 }
 
 function setup() {
-  const summaryHeaders = [
-    'Timestamp','SessionId','Player','Mode','Dan','Total','Correct','BestStreak','StartedAt','FinishedAt','DurationMs','UserAgent','QuestionList','DetailsJSON'
-  ];
-  const questionHeaders = [
-    'Timestamp','SessionId','Player','Mode','Dan','A','B','QuestionText','AnswerText','User','CorrectAns','Correct','StreakAfter','BestStreak','TimeMs','UserAgent'
-  ];
+  const guguSummaryHeaders = ['Timestamp','SessionId','Player','Mode','Dan','Total','Correct','BestStreak','StartedAt','FinishedAt','DurationMs','UserAgent','QuestionList','DetailsJSON'];
+  const guguQuestionHeaders = ['Timestamp','SessionId','Player','Mode','Dan','A','B','QuestionText','AnswerText','User','CorrectAns','Correct','StreakAfter','BestStreak','TimeMs','UserAgent'];
+  const arithSummaryHeaders = ['Timestamp','SessionId','Player','Mode','Total','Correct','BestStreak','StartedAt','FinishedAt','DurationMs','UserAgent','DetailsJSON'];
+  const arithQuestionHeaders = ['Timestamp','SessionId','Player','Mode','A','B','Operator','QuestionText','AnswerText','User','CorrectAns','Correct','StreakAfter','BestStreak','TimeMs','UserAgent'];
   const dashHeaders = ['DASHBOARD'];
 
-  getOrCreateSheet_(SHEET_SUMMARY, summaryHeaders);
-  getOrCreateSheet_(SHEET_QUESTIONS, questionHeaders);
+  getOrCreateSheet_(SHEET_GUGUDAN_SUMMARY, guguSummaryHeaders);
+  getOrCreateSheet_(SHEET_GUGUDAN_QUESTIONS, guguQuestionHeaders);
+  getOrCreateSheet_(SHEET_ARITHMETIC_SUMMARY, arithSummaryHeaders);
+  getOrCreateSheet_(SHEET_ARITHMETIC_QUESTIONS, arithQuestionHeaders);
   const dash = getOrCreateSheet_(SHEET_DASHBOARD, dashHeaders);
   dash.setFrozenRows(1);
 }
@@ -40,64 +42,38 @@ function doPost(e) {
 
     if (data.type === 'gugudan_q') {
       const q = (data.details && data.details[0]) || {};
-      const questionText = (q.a != null && q.b != null) ? `${q.a}×${q.b}` : '';
-      const answerText = q.correctAns != null ? String(q.correctAns) : '';
-      const streakAfter = q.streakAfter != null ? q.streakAfter : (data.streakAfter != null ? data.streakAfter : '');
-      const bestStreak = data.bestStreak != null ? data.bestStreak : (q.bestStreak != null ? q.bestStreak : '');
-      const sh = ss.getSheetByName(SHEET_QUESTIONS) || ss.insertSheet(SHEET_QUESTIONS);
-      const row = [
-        now,
-        sessionId,
-        data.player || '',
-        data.mode || '',
-        data.dan || '',
-        q.a != null ? q.a : '',
-        q.b != null ? q.b : '',
-        questionText,
-        answerText,
-        q.user != null ? q.user : '',
-        q.correctAns != null ? q.correctAns : '',
-        q.correct ? 1 : 0,
-        streakAfter,
-        bestStreak,
-        q.timeMs != null ? q.timeMs : '',
-        data.userAgent || ''
-      ];
-      sh.appendRow(row);
-    } else {
-      const sh = ss.getSheetByName(SHEET_SUMMARY) || ss.insertSheet(SHEET_SUMMARY);
-      const questionList = Array.isArray(data.details) && data.details.length
-        ? data.details.map(d => {
-            const a = d.a != null ? d.a : '?';
-            const b = d.b != null ? d.b : '?';
-            const ans = d.correctAns != null ? d.correctAns : '?';
-            return `${a}×${b}=${ans}`;
-          }).join(' | ')
-        : '';
-      const row = [
-        now,
-        sessionId,
-        data.player || '',
-        data.mode || '',
-        data.dan || '',
-        data.total != null ? data.total : '',
-        data.correct != null ? data.correct : '',
-        data.bestStreak != null ? data.bestStreak : '',
-        data.startedAt || '',
-        data.finishedAt || '',
-        data.durationMs != null ? data.durationMs : '',
-        data.userAgent || '',
-        questionList,
-        JSON.stringify(data.details || [])
-      ];
-      sh.appendRow(row);
+      const sh = ss.getSheetByName(SHEET_GUGUDAN_QUESTIONS);
+      sh.appendRow([
+        now, sessionId, data.player || '', data.mode || '', data.dan || '',
+        q.a, q.b, `${q.a}×${q.b}`, q.correctAns, q.user, q.correctAns, q.correct ? 1 : 0,
+        q.streakAfter, data.bestStreak, q.timeMs, data.userAgent || ''
+      ]);
+    } else if (data.type === 'gugudan') {
+      const sh = ss.getSheetByName(SHEET_GUGUDAN_SUMMARY);
+      const questionList = Array.isArray(data.details) ? data.details.map(d => `${d.a}×${d.b}=${d.correctAns}`).join(' | ') : '';
+      sh.appendRow([
+        now, sessionId, data.player || '', data.mode || '', data.dan || '', data.total, data.correct, data.bestStreak,
+        data.startedAt, data.finishedAt, data.durationMs, data.userAgent || '', questionList, JSON.stringify(data.details || [])
+      ]);
+    } else if (data.type === 'arithmetic_q') {
+      const q = (data.details && data.details[0]) || {};
+      const sh = ss.getSheetByName(SHEET_ARITHMETIC_QUESTIONS);
+      sh.appendRow([
+        now, sessionId, data.player || '', data.mode || '', 
+        q.a, q.b, q.op, `${q.a}${q.op}${q.b}`, q.correctAns, q.user, q.correctAns, q.correct ? 1 : 0,
+        q.streakAfter, data.bestStreak, q.timeMs, data.userAgent || ''
+      ]);
+    } else if (data.type === 'arithmetic') {
+      const sh = ss.getSheetByName(SHEET_ARITHMETIC_SUMMARY);
+      sh.appendRow([
+        now, sessionId, data.player || '', data.mode || '', data.total, data.correct, data.bestStreak,
+        data.startedAt, data.finishedAt, data.durationMs, data.userAgent || '', JSON.stringify(data.details || [])
+      ]);
     }
 
-    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -106,66 +82,29 @@ function buildDashboard() {
   const dash = ss.getSheetByName(SHEET_DASHBOARD) || ss.insertSheet(SHEET_DASHBOARD);
   dash.clear();
 
-  // 타이틀
-  dash.getRange('A1').setValue('Hanasol 구구단 대시보드');
-  dash.getRange('A1').setFontWeight('bold').setFontSize(16);
+  // --- 구구단 섹션 ---
+  dash.getRange('A1').setValue('구구단 게임 대시보드').setFontWeight('bold').setFontSize(16);
+  dash.getRange('A3').setValue('총 세션 수');
+  dash.getRange('B3').setFormula('=COUNTA(' + SHEET_GUGUDAN_SUMMARY + '!A2:A)');
+  dash.getRange('A4').setValue('평균 정답률');
+  dash.getRange('B4').setFormula('=IFERROR(AVERAGE(ArrayFormula(' + SHEET_GUGUDAN_SUMMARY + '!G2:G / ' + SHEET_GUGUDAN_SUMMARY + '!F2:F)))').setNumberFormat('0.0%');
 
-  // KPI 섹션
-  dash.getRange('A3').setValue('지표');
-  dash.getRange('A4').setValue('총 세션 수');
-  dash.getRange('B4').setFormula('=COUNTA(' + SHEET_SUMMARY + '!A2:A)');
+  dash.getRange('D3').setValue('단별 평균 정답률');
+  dash.getRange('D4').setFormula('=QUERY(' + SHEET_GUGUDAN_QUESTIONS + '!E2:L, "select E, avg(L) where E is not null group by E label avg(L) \'정답률\'", 1)');
 
-  dash.getRange('A5').setValue('평균 점수(개)');
-  dash.getRange('B5').setFormula('=IFERROR(AVERAGE(' + SHEET_SUMMARY + '!G2:G),0)');
-
-  dash.getRange('A6').setValue('평균 정답률');
-  dash.getRange('B6').setFormula('=IFERROR(AVERAGE(ArrayFormula(' + SHEET_SUMMARY + '!G2:G / ' + SHEET_SUMMARY + '!F2:F)),0)');
-
-  dash.getRange('A7').setValue('평균 소요 시간(초)');
-  dash.getRange('B7').setFormula('=IFERROR(AVERAGE(' + SHEET_SUMMARY + '!J2:J)/1000,0)');
-
-  // 단별 평균 정답(개) 테이블
-  dash.getRange('D3').setValue('단별 평균 정답(개)');
-  dash.getRange('D4').setFormula('=QUERY(' + SHEET_SUMMARY + '!E2:G, "select E, avg(G) where E is not null group by E label avg(G) \'평균 정답\'", 1)');
-
-  // 모드별 정답률(문제 단위) 테이블
-  dash.getRange('I3').setValue('모드별 정답률');
-  dash.getRange('I4').setFormula('=QUERY(' + SHEET_QUESTIONS + '!D2:K, "select D, avg(J) where D is not null group by D label avg(J) \'정답률\'", 1)');
-
-  // 최근 세션 10개 테이블
-  dash.getRange('A10').setValue('최근 세션 10개');
-  dash.getRange('A11').setFormula('=QUERY(' + SHEET_SUMMARY + '!A2:K, "select A,C,E,D,G,F,J order by A desc limit 10 label A \'기록시간\', C \'이름\', E \'단\', D \'모드\', G \'정답\', F \'총문항\', J \'소요ms\'", 1)');
-
-  // 차트: 단별 평균 정답(개)
-  const chart1 = dash.newChart()
-    .asColumnChart()
-    .addRange(dash.getRange('D5:E14'))
-    .setPosition(3, 7, 0, 0)
-    .setOption('title', '단별 평균 정답(개)')
-    .build();
+  const chart1 = dash.newChart().asColumnChart().addRange(dash.getRange('D4:E12')).setPosition(2, 6, 0, 0).setOption('title', '구구단: 단별 정답률').build();
   dash.insertChart(chart1);
 
-  // 차트: 모드별 정답률
-  const chart2 = dash.newChart()
-    .asColumnChart()
-    .addRange(dash.getRange('I5:J14'))
-    .setPosition(3, 11, 0, 0)
-    .setOption('title', '모드별 정답률')
-    .setOption('vAxis.viewWindow', { min: 0, max: 1 })
-    .build();
-  dash.insertChart(chart2);
+  // --- 덧셈/뺄셈 섹션 ---
+  dash.getRange('A15').setValue('덧셈/뺄셈 게임 대시보드').setFontWeight('bold').setFontSize(16);
+  dash.getRange('A17').setValue('총 세션 수');
+  dash.getRange('B17').setFormula('=COUNTA(' + SHEET_ARITHMETIC_SUMMARY + '!A2:A)');
+  dash.getRange('A18').setValue('평균 정답률');
+  dash.getRange('B18').setFormula('=IFERROR(AVERAGE(ArrayFormula(' + SHEET_ARITHMETIC_SUMMARY + '!F2:F / ' + SHEET_ARITHMETIC_SUMMARY + '!E2:E)))').setNumberFormat('0.0%');
 
-  // 차트: 점수 추이(요약 시트 사용)
-  const sum = ss.getSheetByName(SHEET_SUMMARY);
-  if (sum) {
-    const lastRow = Math.max(2, sum.getLastRow());
-    const chart3 = dash.newChart()
-      .asLineChart()
-      .addRange(sum.getRange(1, 1, lastRow - 1, 7)) // A:G (도메인: Timestamp, 시리즈 포함)
-      .setPosition(18, 1, 0, 0)
-      .setOption('title', '세션별 점수 추이')
-      .setOption('legend.position', 'none')
-      .build();
-    dash.insertChart(chart3);
-  }
+  dash.getRange('D17').setValue('모드별 평균 정답률');
+  dash.getRange('D18').setFormula('=QUERY(' + SHEET_ARITHMETIC_QUESTIONS + '!D2:L, "select D, avg(L) where D is not null group by D label avg(L) \'정답률\'", 1)');
+
+  const chart2 = dash.newChart().asBarChart().addRange(dash.getRange('D18:E21')).setPosition(16, 6, 0, 0).setOption('title', '덧셈/뺄셈: 모드별 정답률').build();
+  dash.insertChart(chart2);
 }
