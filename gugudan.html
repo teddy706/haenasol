@@ -186,7 +186,7 @@
               <button id="resetBtn" class="btn ghost" type="button"><span aria-hidden="true">🧹</span> 초기화</button>
             </div>
             <div class="meta">
-              <span class="badge"><span aria-hidden>✨</span> 9문제</span>
+              <span class="badge"><span aria-hidden>✨</span> 72문제</span>
               <span class="badge"><span aria-hidden>💡</span> 엔터키로 제출</span>
             </div>
           </div>
@@ -295,7 +295,6 @@
 
       let state = {
         player: '해나',
-        dan: 2,
         mode: 'sequential',
         questions: [], // {a,b,answer}
         idx: 0,
@@ -307,11 +306,23 @@
         details: [] // {a,b,user,correctAns,correct,timeMs,streakAfter}
       };
 
-      function buildQuestions(dan, mode){
-        const arr = Array.from({length: 9}, (_,i)=> i+1);
-        if(mode === 'reverse') arr.reverse();
-        if(mode === 'random') shuffle(arr);
-        return arr.map(b=> ({ a: dan, b, answer: dan*b }));
+      function buildQuestions(mode){
+        const questions = [];
+        const dans = Array.from({length: 8}, (_, i) => i + 2);
+        const multipliers = Array.from({length: 9}, (_,i)=> i+1);
+
+        for (const dan of dans) {
+          for (const multiplier of multipliers) {
+            questions.push({ a: dan, b: multiplier, answer: dan * multiplier });
+          }
+        }
+
+        if (mode === 'random') {
+          shuffle(questions);
+        } else if (mode === 'reverse') {
+          questions.reverse();
+        }
+        return questions;
       }
 
       function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -323,10 +334,8 @@
 
       function start(){
         state.player = els.playerSelector.querySelector('.active').dataset.player || '해나';
-        // 게임 시작 시 2단부터 9단까지 랜덤으로 선택
-        state.dan = Math.floor(Math.random() * 8) + 2;
         state.mode = els.modeSelector.querySelector('.active').dataset.mode || 'sequential';
-        state.questions = buildQuestions(state.dan, state.mode);
+        state.questions = buildQuestions(state.mode);
         state.idx = 0;
         state.correct = 0;
         state.details = [];
@@ -406,7 +415,7 @@
           type: 'gugudan',
           player: state.player || null,
           mode: state.mode,
-          dan: state.dan,
+          dan: 'all',
           total: state.questions.length,
           correct: state.correct,
           bestStreak: state.bestStreak,
@@ -456,7 +465,7 @@
           type: 'gugudan_q',
           player: state.player || null,
           mode: state.mode,
-          dan: state.dan,
+          dan: q.a, // 개별 문제의 dan(a) 값을 저장
           total: 1,
           correct: isCorrect ? 1 : 0,
           startedAt: new Date(state.qStartedAt).toISOString(),
