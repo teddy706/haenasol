@@ -239,6 +239,7 @@
         options.forEach(optionText => {
           const button = document.createElement('button');
           button.textContent = optionText.replace(/ /g, '␣');
+          button.dataset.originalText = optionText; // Store original text
           button.classList.add('option-btn');
           button.addEventListener('click', () => selectAnswer(optionText, correctSentence));
           optionsContainer.appendChild(button);
@@ -252,7 +253,7 @@
         quizDetails.push({ question: correct, userAnswer: selected, isCorrect: isCorrect });
 
         Array.from(optionsContainer.children).forEach(btn => {
-          if (btn.textContent === correct) btn.classList.add('correct');
+          if (btn.dataset.originalText === correct) btn.classList.add('correct');
           else btn.classList.add('incorrect');
           btn.disabled = true;
         });
