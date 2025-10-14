@@ -108,3 +108,30 @@ function buildDashboard() {
   const chart2 = dash.newChart().asBarChart().addRange(dash.getRange('D18:E21')).setPosition(16, 6, 0, 0).setOption('title', '덧셈/뺄셈: 모드별 정답률').build();
   dash.insertChart(chart2);
 }
+
+function doGet(e) {
+  try {
+    const sheetName = '2-2'; // Provided by user
+    const ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1vz0b48eKzOgCThNatPnpylz8Wp7cwFp1pRzUGO72EGg/edit?usp=sharing");
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      throw new Error(`Sheet "${sheetName}" not found.`);
+    }
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift(); // Get headers
+    const json = data.map(row => {
+      const obj = {};
+      headers.forEach((header, i) => {
+        obj[header] = row[i];
+      });
+      return obj;
+    });
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, data: json }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
